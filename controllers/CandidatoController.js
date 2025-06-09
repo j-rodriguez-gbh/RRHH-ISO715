@@ -1,0 +1,265 @@
+const { Candidato, Competencia, Idioma, Capacitacion, ExperienciaLaboral } = require('../models');
+const CandidateStateService = require('../services/CandidateStateMachine');
+const Joi = require('joi');
+const { Op } = require('sequelize');
+
+class CandidatoController {
+  constructor() {
+    this.stateService = new CandidateStateService();
+  }
+
+  async getAll(req, res) {
+    try {
+      const { page = 1, limit = 10, estado, search } = req.query;
+      const offset = (page - 1) * limit;
+
+      const whereClause = {};
+      if (estado) whereClause.estado = estado;
+      if (search) {
+        whereClause[Op.or] = [
+          { nombres: { [Op.iLike]: `%${search}%` } },
+          { apellidos: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } }
+        ];
+      }
+
+      const candidatos = await Candidato.findAndCountAll({
+        where: whereClause,
+        include: [
+          { model: Competencia, through: { attributes: [] } },
+          { model: Idioma, through: { attributes: [] } },
+          { model: Capacitacion, through: { attributes: [] } },
+          { model: ExperienciaLaboral }
+        ],
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [['createdAt', 'DESC']]
+      });
+
+      res.json({
+        candidatos: candidatos.rows,
+        totalPages: Math.ceil(candidatos.count / limit),
+        currentPage: parseInt(page),
+        total: candidatos.count
+      });
+    } catch (error) {
+      console.error('Error getting candidatos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+      const candidato = await Candidato.findByPk(id, {
+        include: [
+          { model: Competencia, through: { attributes: [] } },
+          { model: Idioma, through: { attributes: [] } },
+          { model: Capacitacion, through: { attributes: [] } },
+          { model: ExperienciaLaboral }
+        ]
+      });
+
+      if (!candidato) {
+        return res.status(404).json({ error: 'Candidato no encontrado' });
+      }
+
+      // Get valid transitions for current state
+      const validTransitions = this.stateService.getValidTransitions(candidato.estado);
+
+      res.json({
+        candidato,
+        validTransitions
+      });
+    } catch (error) {
+      console.error('Error getting candidato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async create(req, res) {
+    try {
+      const schema = Joi.object({
+        nombres: Joi.string().max(100).required(),
+        apellidos: Joi.string().max(100).required(),
+        email: Joi.string().email().max(100).required(),
+        telefono: Joi.string().max(20).optional(),
+        documento_identidad: Joi.string().max(20).optional(),
+        fecha_nacimiento: Joi.date().optional(),
+        direccion: Joi.string().optional(),
+        salario_aspirado: Joi.number().positive().optional(),
+        disponibilidad: Joi.string().valid('inmediata', '15_dias', '30_dias', 'a_convenir').optional(),
+        observaciones: Joi.string().optional(),
+        competencias: Joi.array().items(Joi.number()).optional(),
+        idiomas: Joi.array().items(Joi.number()).optional(),
+        capacitaciones: Joi.array().items(Joi.number()).optional()
+      });
+
+      const { error, value } = schema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+
+      // Check if email already exists
+      const existingCandidato = await Candidato.findOne({ where: { email: value.email } });
+      if (existingCandidato) {
+        return res.status(409).json({ error: 'Ya existe un candidato con este email' });
+      }
+
+      const candidato = await Candidato.create(value);
+
+      // Associate competencias, idiomas, capacitaciones
+      if (value.competencias) await candidato.setCompetencias(value.competencias);
+      if (value.idiomas) await candidato.setIdiomas(value.idiomas);
+      if (value.capacitaciones) await candidato.setCapacitacions(value.capacitaciones);
+
+      res.status(201).json(candidato);
+    } catch (error) {
+      console.error('Error creating candidato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const { id } = req.params;
+      const candidato = await Candidato.findByPk(id);
+
+      if (!candidato) {
+        return res.status(404).json({ error: 'Candidato no encontrado' });
+      }
+
+      const schema = Joi.object({
+        nombres: Joi.string().max(100).optional(),
+        apellidos: Joi.string().max(100).optional(),
+        email: Joi.string().email().max(100).optional(),
+        telefono: Joi.string().max(20).optional(),
+        documento_identidad: Joi.string().max(20).optional(),
+        fecha_nacimiento: Joi.date().optional(),
+        direccion: Joi.string().optional(),
+        salario_aspirado: Joi.number().positive().optional(),
+        disponibilidad: Joi.string().valid('inmediata', '15_dias', '30_dias', 'a_convenir').optional(),
+        observaciones: Joi.string().optional(),
+        competencias: Joi.array().items(Joi.number()).optional(),
+        idiomas: Joi.array().items(Joi.number()).optional(),
+        capacitaciones: Joi.array().items(Joi.number()).optional()
+      });
+
+      const { error, value } = schema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
+
+      await candidato.update(value);
+
+      // Update associations
+      if (value.competencias) await candidato.setCompetencias(value.competencias);
+      if (value.idiomas) await candidato.setIdiomas(value.idiomas);
+      if (value.capacitaciones) await candidato.setCapacitacions(value.capacitaciones);
+
+      res.json(candidato);
+    } catch (error) {
+      console.error('Error updating candidato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async changeState(req, res) {
+    try {
+      const { id } = req.params;
+      const { event, observaciones } = req.body;
+
+      const candidato = await Candidato.findByPk(id);
+      if (!candidato) {
+        return res.status(404).json({ error: 'Candidato no encontrado' });
+      }
+
+      // Validate transition
+      if (!this.stateService.canTransition(candidato.estado, event)) {
+        return res.status(400).json({ error: 'Transición de estado no válida' });
+      }
+
+      const newState = this.stateService.getNextState(candidato.estado, event);
+      await candidato.update({ 
+        estado: newState,
+        observaciones: observaciones || candidato.observaciones
+      });
+
+      res.json({
+        candidato,
+        previousState: candidato.estado,
+        newState: newState
+      });
+    } catch (error) {
+      console.error('Error changing candidato state:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async delete(req, res) {
+    try {
+      const { id } = req.params;
+      const candidato = await Candidato.findByPk(id);
+
+      if (!candidato) {
+        return res.status(404).json({ error: 'Candidato no encontrado' });
+      }
+
+      await candidato.destroy();
+      res.json({ message: 'Candidato eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error deleting candidato:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async search(req, res) {
+    try {
+      const { puestoId, competencias, idiomas, capacitaciones, experiencia_min } = req.query;
+
+      let whereClause = {};
+      let includeClause = [];
+
+      // Add filters based on search criteria
+      if (competencias) {
+        const competenciaIds = competencias.split(',').map(id => parseInt(id));
+        includeClause.push({
+          model: Competencia,
+          where: { id: { [Op.in]: competenciaIds } },
+          through: { attributes: [] }
+        });
+      }
+
+      if (idiomas) {
+        const idiomaIds = idiomas.split(',').map(id => parseInt(id));
+        includeClause.push({
+          model: Idioma,
+          where: { id: { [Op.in]: idiomaIds } },
+          through: { attributes: [] }
+        });
+      }
+
+      if (capacitaciones) {
+        const capacitacionIds = capacitaciones.split(',').map(id => parseInt(id));
+        includeClause.push({
+          model: Capacitacion,
+          where: { id: { [Op.in]: capacitacionIds } },
+          through: { attributes: [] }
+        });
+      }
+
+      const candidatos = await Candidato.findAll({
+        where: whereClause,
+        include: includeClause,
+        distinct: true
+      });
+
+      res.json(candidatos);
+    } catch (error) {
+      console.error('Error searching candidatos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+}
+
+module.exports = new CandidatoController(); 

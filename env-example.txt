@@ -1,0 +1,23 @@
+NODE_ENV=development
+PORT=3001
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5555
+DB_NAME=rrhh_system
+DB_USER=postgres
+DB_PASSWORD=tu_contraseña_aqui
+
+# Para el script de setup (si usas usuario diferente)
+DB_ADMIN_USER=postgres
+DB_ADMIN_PASSWORD=tu_contraseña_admin
+
+# JWT Configuration
+JWT_SECRET=tu_super_secreto_jwt_aqui_cambiar_en_produccion
+JWT_EXPIRES_IN=24h
+
+# Session Configuration
+SESSION_SECRET=tu_secreto_de_session_aqui_cambiar_en_produccion
+
+# Puppeteer Configuration (for PDF generation)
+PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox 
