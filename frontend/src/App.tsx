@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
+import { CandidatosList } from './components/CandidatosList';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -71,8 +72,8 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              {/* Placeholder routes - we'll implement these next */}
-              <Route path="/candidatos" element={<ProtectedRoute><div>Candidatos (Coming Soon)</div></ProtectedRoute>} />
+              {/* Candidatos routes */}
+              <Route path="/candidatos" element={<ProtectedRoute><CandidatosList /></ProtectedRoute>} />
               <Route path="/candidatos/nuevo" element={<ProtectedRoute><div>Nuevo Candidato (Coming Soon)</div></ProtectedRoute>} />
               <Route path="/candidatos/buscar" element={<ProtectedRoute><div>Búsqueda (Coming Soon)</div></ProtectedRoute>} />
               <Route path="/empleados" element={<ProtectedRoute><div>Empleados (Coming Soon)</div></ProtectedRoute>} />
