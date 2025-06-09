@@ -15,7 +15,7 @@ async function seedDatabase() {
     const adminUser = await User.create({
       username: 'admin',
       email: 'admin@empresa.com',
-      password: '123456',
+      password: 'admin123',
       role: 'admin'
     });
     console.log('✅ Usuario admin creado');
@@ -24,7 +24,7 @@ async function seedDatabase() {
     const hrManager = await User.create({
       username: 'hr_manager',
       email: 'hr@empresa.com',
-      password: '123456',
+      password: 'hr123',
       role: 'hr_manager'
     });
     console.log('✅ Usuario HR Manager creado');
@@ -33,7 +33,7 @@ async function seedDatabase() {
     const recruiter = await User.create({
       username: 'recruiter',
       email: 'recruiter@empresa.com',
-      password: '123456',
+      password: 'recruiter123',
       role: 'recruiter'
     });
     console.log('✅ Usuario Recruiter creado');
