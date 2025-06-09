@@ -44,9 +44,10 @@ class AuthController {
         token,
         user: {
           id: user.id,
-          username: user.username,
           email: user.email,
-          role: user.role
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         }
       });
     } catch (error) {
