@@ -116,14 +116,21 @@ class CandidatoController {
         email: Joi.string().email().max(100).required(),
         telefono: Joi.string().max(20).optional(),
         documento_identidad: Joi.string().max(20).optional(),
-        fecha_nacimiento: Joi.date().optional(),
+        fecha_nacimiento: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional(),
         direccion: Joi.string().optional(),
-        salario_aspirado: Joi.number().positive().optional(),
+        salario_aspirado: Joi.number().positive().optional().allow(null),
         disponibilidad: Joi.string().valid('inmediata', '15_dias', '30_dias', 'a_convenir').optional(),
         observaciones: Joi.string().optional(),
         competencias: Joi.array().items(Joi.number()).optional(),
         idiomas: Joi.array().items(Joi.number()).optional(),
-        capacitaciones: Joi.array().items(Joi.number()).optional()
+        capacitaciones: Joi.array().items(Joi.number()).optional(),
+        experiencias: Joi.array().items(Joi.object({
+          empresa: Joi.string().max(100).required(),
+          puesto: Joi.string().max(100).required(),
+          fecha_desde: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).required(),
+          fecha_hasta: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional().allow(null),
+          salario: Joi.number().positive().optional().allow(null)
+        })).optional()
       });
 
       const { error, value } = schema.validate(req.body);
@@ -143,6 +150,31 @@ class CandidatoController {
       if (value.competencias) await candidato.setCompetencias(value.competencias);
       if (value.idiomas) await candidato.setIdiomas(value.idiomas);
       if (value.capacitaciones) await candidato.setCapacitacions(value.capacitaciones);
+
+      // Create experiencias laborales
+      if (value.experiencias) {
+        for (const experiencia of value.experiencias) {
+          // Convert date strings to Date objects if needed
+          const fechaInicio = experiencia.fecha_desde ? new Date(experiencia.fecha_desde) : null;
+          const fechaFin = experiencia.fecha_hasta ? new Date(experiencia.fecha_hasta) : null;
+          
+          console.log('Creating experience with dates:', {
+            empresa: experiencia.empresa,
+            fecha_desde_original: experiencia.fecha_desde,
+            fecha_hasta_original: experiencia.fecha_hasta,
+            fecha_inicio_converted: fechaInicio,
+            fecha_fin_converted: fechaFin
+          });
+          
+          await candidato.createExperienciaLaboral({
+            empresa: experiencia.empresa,
+            puesto: experiencia.puesto,
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            salario: experiencia.salario
+          });
+        }
+      }
 
       res.status(201).json(candidato);
     } catch (error) {
@@ -166,14 +198,21 @@ class CandidatoController {
         email: Joi.string().email().max(100).optional(),
         telefono: Joi.string().max(20).optional(),
         documento_identidad: Joi.string().max(20).optional(),
-        fecha_nacimiento: Joi.date().optional(),
+        fecha_nacimiento: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional(),
         direccion: Joi.string().optional(),
-        salario_aspirado: Joi.number().positive().optional(),
+        salario_aspirado: Joi.number().positive().optional().allow(null),
         disponibilidad: Joi.string().valid('inmediata', '15_dias', '30_dias', 'a_convenir').optional(),
         observaciones: Joi.string().optional(),
         competencias: Joi.array().items(Joi.number()).optional(),
         idiomas: Joi.array().items(Joi.number()).optional(),
-        capacitaciones: Joi.array().items(Joi.number()).optional()
+        capacitaciones: Joi.array().items(Joi.number()).optional(),
+        experiencias: Joi.array().items(Joi.object({
+          empresa: Joi.string().max(100).required(),
+          puesto: Joi.string().max(100).required(),
+          fecha_desde: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).required(),
+          fecha_hasta: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional().allow(null),
+          salario: Joi.number().positive().optional().allow(null)
+        })).optional()
       });
 
       const { error, value } = schema.validate(req.body);
@@ -187,6 +226,37 @@ class CandidatoController {
       if (value.competencias) await candidato.setCompetencias(value.competencias);
       if (value.idiomas) await candidato.setIdiomas(value.idiomas);
       if (value.capacitaciones) await candidato.setCapacitacions(value.capacitaciones);
+
+      // Update experiencias laborales
+      if (value.experiencias) {
+        // Delete existing experiences
+        await candidato.getExperienciaLaborals().then(experiences => {
+          return Promise.all(experiences.map(exp => exp.destroy()));
+        });
+        
+        // Create new experiences
+        for (const experiencia of value.experiencias) {
+          // Convert date strings to Date objects if needed
+          const fechaInicio = experiencia.fecha_desde ? new Date(experiencia.fecha_desde) : null;
+          const fechaFin = experiencia.fecha_hasta ? new Date(experiencia.fecha_hasta) : null;
+          
+          console.log('Creating experience with dates:', {
+            empresa: experiencia.empresa,
+            fecha_desde_original: experiencia.fecha_desde,
+            fecha_hasta_original: experiencia.fecha_hasta,
+            fecha_inicio_converted: fechaInicio,
+            fecha_fin_converted: fechaFin
+          });
+          
+          await candidato.createExperienciaLaboral({
+            empresa: experiencia.empresa,
+            puesto: experiencia.puesto,
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            salario: experiencia.salario
+          });
+        }
+      }
 
       res.json(candidato);
     } catch (error) {

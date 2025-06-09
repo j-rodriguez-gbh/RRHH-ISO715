@@ -11,68 +11,68 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-  ArrowUpDown
+  X
 } from 'lucide-react';
 import { candidatosAPI } from '../services/api';
 import type { Candidato, CandidatoEstado } from '../types';
+import CandidatoForm from './CandidatoForm';
 
-const ESTADOS_OPTIONS: { value: CandidatoEstado | ''; label: string }[] = [
+const ESTADOS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
   { value: 'aplicado', label: 'Aplicado' },
-  { value: 'en_revision', label: 'En Revisión' },
+  { value: 'en_revision', label: 'En revisión' },
   { value: 'preseleccionado', label: 'Preseleccionado' },
-  { value: 'entrevista_inicial', label: 'Entrevista Inicial' },
-  { value: 'entrevista_tecnica', label: 'Entrevista Técnica' },
-  { value: 'entrevista_final', label: 'Entrevista Final' },
+  { value: 'entrevista_inicial', label: 'Entrevista inicial' },
+  { value: 'entrevista_tecnica', label: 'Entrevista técnica' },
+  { value: 'entrevista_final', label: 'Entrevista final' },
   { value: 'aprobado', label: 'Aprobado' },
   { value: 'rechazado', label: 'Rechazado' },
   { value: 'contratado', label: 'Contratado' },
-];
+] as const;
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', {
+  return new Intl.NumberFormat('es-DO', {
     style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
+    currency: 'DOP'
   }).format(amount);
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('es-CO', {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-DO', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
+    day: 'numeric'
   });
 };
 
 const getEstadoBadgeClass = (estado: CandidatoEstado) => {
-  const baseClasses = 'status-badge';
-  const stateClasses = {
-    aplicado: 'status-aplicado',
-    en_revision: 'status-en_revision',
-    preseleccionado: 'status-preseleccionado',
-    entrevista_inicial: 'status-entrevista_inicial',
-    entrevista_tecnica: 'status-entrevista_tecnica',
-    entrevista_final: 'status-entrevista_final',
-    aprobado: 'status-aprobado',
-    rechazado: 'status-rechazado',
-    contratado: 'status-contratado',
+  const classes = {
+    'aplicado': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800',
+    'en_revision': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800',
+    'preseleccionado': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800',
+    'entrevista_inicial': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800',
+    'entrevista_tecnica': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800',
+    'entrevista_final': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800',
+    'aprobado': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800',
+    'rechazado': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800',
+    'contratado': 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800',
   };
   
-  return `${baseClasses} ${stateClasses[estado] || ''}`;
+  return classes[estado] || classes.aplicado;
 };
 
 const getEstadoLabel = (estado: CandidatoEstado) => {
   const labels = {
-    aplicado: 'Aplicado',
-    en_revision: 'En Revisión',
-    preseleccionado: 'Preseleccionado',
-    entrevista_inicial: 'Entrevista Inicial',
-    entrevista_tecnica: 'Entrevista Técnica',
-    entrevista_final: 'Entrevista Final',
-    aprobado: 'Aprobado',
-    rechazado: 'Rechazado',
-    contratado: 'Contratado',
+    'aplicado': 'Aplicado',
+    'en_revision': 'En revisión',
+    'preseleccionado': 'Preseleccionado',
+    'entrevista_inicial': 'Entrevista inicial',
+    'entrevista_tecnica': 'Entrevista técnica',
+    'entrevista_final': 'Entrevista final',
+    'aprobado': 'Aprobado',
+    'rechazado': 'Rechazado',
+    'contratado': 'Contratado',
   };
   
   return labels[estado] || estado;
@@ -84,6 +84,8 @@ export const CandidatosList: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState<CandidatoEstado | ''>('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingCandidato, setEditingCandidato] = useState<number | undefined>(undefined);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const limit = 10;
 
@@ -138,6 +140,27 @@ export const CandidatosList: React.FC = () => {
     setPage(1);
   };
 
+  const handleNewCandidato = () => {
+    setEditingCandidato(undefined);
+    setShowForm(true);
+  };
+
+  const handleEditCandidato = (id: number) => {
+    setEditingCandidato(id);
+    setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingCandidato(undefined);
+  };
+
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingCandidato(undefined);
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -166,11 +189,11 @@ export const CandidatosList: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+    <>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-3">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
@@ -181,17 +204,14 @@ export const CandidatosList: React.FC = () => {
               </div>
             </div>
             
-            <Link to="/candidatos/nuevo" className="btn-primary flex items-center space-x-2">
+            <button 
+              onClick={handleNewCandidato}
+              className="btn-primary flex items-center space-x-2"
+            >
               <Plus className="h-4 w-4" />
               <span>Nuevo Candidato</span>
-            </Link>
+            </button>
           </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
           
           {/* Search and Filters */}
           <div className="card mb-6">
@@ -200,14 +220,14 @@ export const CandidatosList: React.FC = () => {
                 <div className="flex-1">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                         <input
-                       ref={searchInputRef}
-                       type="text"
-                       placeholder="Buscar por nombre o email..."
-                       value={search}
-                       onChange={(e) => setSearch(e.target.value)}
-                       className="input-field pl-10"
-                     />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Buscar por nombre o email..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="input-field pl-10"
+                    />
                   </div>
                 </div>
                 
@@ -249,9 +269,9 @@ export const CandidatosList: React.FC = () => {
                       <button
                         type="button"
                         onClick={clearFilters}
-                        className="btn-secondary w-full"
+                        className="btn-secondary text-sm"
                       >
-                        Limpiar Filtros
+                        Limpiar filtros
                       </button>
                     </div>
                   </div>
@@ -260,17 +280,14 @@ export const CandidatosList: React.FC = () => {
             </form>
           </div>
 
-          {/* Table */}
-          <div className="card overflow-hidden">
+          {/* Candidates Table */}
+          <div className="card">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <div className="flex items-center space-x-1">
-                        <span>Candidato</span>
-                        <ArrowUpDown className="h-3 w-3" />
-                      </div>
+                      Candidato
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Estado
@@ -284,8 +301,8 @@ export const CandidatosList: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Disponibilidad
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
+                    <th className="relative px-6 py-3">
+                      <span className="sr-only">Actions</span>
                     </th>
                   </tr>
                 </thead>
@@ -335,13 +352,13 @@ export const CandidatosList: React.FC = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Link>
-                          <Link
-                            to={`/candidatos/${candidato.id}/editar`}
+                          <button
+                            onClick={() => handleEditCandidato(candidato.id)}
                             className="text-yellow-600 hover:text-yellow-900 p-1 rounded"
                             title="Editar"
                           >
                             <Edit className="h-4 w-4" />
-                          </Link>
+                          </button>
                           <button
                             className="text-red-600 hover:text-red-900 p-1 rounded"
                             title="Eliminar"
@@ -371,10 +388,10 @@ export const CandidatosList: React.FC = () => {
                 </p>
                 {!search && !estadoFilter && (
                   <div className="mt-6">
-                    <Link to="/candidatos/nuevo" className="btn-primary">
+                    <button onClick={handleNewCandidato} className="btn-primary">
                       <Plus className="h-4 w-4 mr-2" />
                       Nuevo Candidato
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -451,7 +468,40 @@ export const CandidatosList: React.FC = () => {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Modal para Formulario */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCloseForm}></div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    {editingCandidato ? 'Editar Candidato' : 'Nuevo Candidato'}
+                  </h3>
+                  <button
+                    onClick={handleCloseForm}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                
+                <CandidatoForm
+                  candidatoId={editingCandidato}
+                  onSuccess={handleFormSuccess}
+                  onCancel={handleCloseForm}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }; 

@@ -116,7 +116,7 @@ export const candidatosAPI = {
 export const competenciasAPI = {
   getAll: async (): Promise<Competencia[]> => {
     const response = await api.get('/competencias');
-    return response.data;
+    return response.data.competencias || response.data;
   },
   
   create: async (competencia: { nombre: string; descripcion?: string }): Promise<Competencia> => {
@@ -138,7 +138,7 @@ export const competenciasAPI = {
 export const idiomasAPI = {
   getAll: async (): Promise<Idioma[]> => {
     const response = await api.get('/idiomas');
-    return response.data;
+    return response.data.idiomas || response.data;
   },
   
   create: async (idioma: { nombre: string }): Promise<Idioma> => {
