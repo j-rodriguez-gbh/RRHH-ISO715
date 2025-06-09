@@ -12,17 +12,47 @@ const Empleado = require('./Empleado');
 
 // Define relationships
 // Candidato relationships
-Candidato.belongsToMany(Competencia, { through: 'CandidatoCompetencias', foreignKey: 'candidatoId' });
-Competencia.belongsToMany(Candidato, { through: 'CandidatoCompetencias', foreignKey: 'competenciaId' });
+Candidato.belongsToMany(Competencia, { 
+  through: 'CandidatoCompetencias', 
+  foreignKey: 'candidatoId',
+  as: 'Competencias'
+});
+Competencia.belongsToMany(Candidato, { 
+  through: 'CandidatoCompetencias', 
+  foreignKey: 'competenciaId',
+  as: 'Candidatos'
+});
 
-Candidato.belongsToMany(Idioma, { through: 'CandidatoIdiomas', foreignKey: 'candidatoId' });
-Idioma.belongsToMany(Candidato, { through: 'CandidatoIdiomas', foreignKey: 'idiomaId' });
+Candidato.belongsToMany(Idioma, { 
+  through: 'CandidatoIdiomas', 
+  foreignKey: 'candidatoId',
+  as: 'Idiomas'
+});
+Idioma.belongsToMany(Candidato, { 
+  through: 'CandidatoIdiomas', 
+  foreignKey: 'idiomaId',
+  as: 'Candidatos'
+});
 
-Candidato.belongsToMany(Capacitacion, { through: 'CandidatoCapacitaciones', foreignKey: 'candidatoId' });
-Capacitacion.belongsToMany(Candidato, { through: 'CandidatoCapacitaciones', foreignKey: 'capacitacionId' });
+Candidato.belongsToMany(Capacitacion, { 
+  through: 'CandidatoCapacitaciones', 
+  foreignKey: 'candidatoId',
+  as: 'Capacitacions'
+});
+Capacitacion.belongsToMany(Candidato, { 
+  through: 'CandidatoCapacitaciones', 
+  foreignKey: 'capacitacionId',
+  as: 'Candidatos'
+});
 
-Candidato.hasMany(ExperienciaLaboral, { foreignKey: 'candidatoId' });
-ExperienciaLaboral.belongsTo(Candidato, { foreignKey: 'candidatoId' });
+Candidato.hasMany(ExperienciaLaboral, { 
+  foreignKey: 'candidatoId',
+  as: 'ExperienciaLaborals'
+});
+ExperienciaLaboral.belongsTo(Candidato, { 
+  foreignKey: 'candidatoId',
+  as: 'Candidato'
+});
 
 // Puesto relationships
 Puesto.belongsToMany(Competencia, { through: 'PuestoCompetencias', foreignKey: 'puestoId' });
