@@ -26,10 +26,25 @@ class CandidatoController {
       const candidatos = await Candidato.findAndCountAll({
         where: whereClause,
         include: [
-          { model: Competencia, through: { attributes: [] } },
-          { model: Idioma, through: { attributes: [] } },
-          { model: Capacitacion, through: { attributes: [] } },
-          { model: ExperienciaLaboral }
+          { 
+            model: Competencia, 
+            as: 'Competencias',
+            through: { attributes: [] } 
+          },
+          { 
+            model: Idioma, 
+            as: 'Idiomas',
+            through: { attributes: [] } 
+          },
+          { 
+            model: Capacitacion, 
+            as: 'Capacitacions',
+            through: { attributes: [] } 
+          },
+          { 
+            model: ExperienciaLaboral,
+            as: 'ExperienciaLaborals'
+          }
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -53,10 +68,25 @@ class CandidatoController {
       const { id } = req.params;
       const candidato = await Candidato.findByPk(id, {
         include: [
-          { model: Competencia, through: { attributes: [] } },
-          { model: Idioma, through: { attributes: [] } },
-          { model: Capacitacion, through: { attributes: [] } },
-          { model: ExperienciaLaboral }
+          { 
+            model: Competencia, 
+            as: 'Competencias',
+            through: { attributes: [] } 
+          },
+          { 
+            model: Idioma, 
+            as: 'Idiomas',
+            through: { attributes: [] } 
+          },
+          { 
+            model: Capacitacion, 
+            as: 'Capacitacions',
+            through: { attributes: [] } 
+          },
+          { 
+            model: ExperienciaLaboral,
+            as: 'ExperienciaLaborals'
+          }
         ]
       });
 
@@ -73,6 +103,7 @@ class CandidatoController {
       });
     } catch (error) {
       console.error('Error getting candidato:', error);
+      console.error('Stack trace:', error.stack);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
@@ -262,4 +293,4 @@ class CandidatoController {
   }
 }
 
-module.exports = new CandidatoController(); 
+module.exports = CandidatoController; 
