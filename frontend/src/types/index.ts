@@ -20,7 +20,9 @@ export interface Competencia {
   id: number;
   nombre: string;
   descripcion?: string;
-  activo: boolean;
+  tipo: 'tecnica' | 'blanda' | 'gerencial';
+  nivel_requerido: 'basico' | 'intermedio' | 'avanzado' | 'experto';
+  activa: boolean;
 }
 
 export interface Idioma {
@@ -42,8 +44,8 @@ export interface ExperienciaLaboral {
   id: number;
   empresa: string;
   puesto: string;
-  fecha_desde: string;
-  fecha_hasta?: string;
+  fecha_inicio: string;
+  fecha_fin?: string;
   salario?: number;
   candidatoId: number;
 }
@@ -103,6 +105,13 @@ export interface CandidatoCreate {
   competencias?: number[];
   idiomas?: number[];
   capacitaciones?: number[];
+  experiencias?: {
+    empresa: string;
+    puesto: string;
+    fecha_desde: string;
+    fecha_hasta?: string | null;
+    salario?: number;
+  }[];
 }
 
 export interface StateTransition {

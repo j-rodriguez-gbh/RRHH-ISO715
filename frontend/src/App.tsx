@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { CandidatosList } from './components/CandidatosList';
+import { Layout } from './components/Layout';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -68,17 +69,19 @@ function App() {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
                   </ProtectedRoute>
                 } 
               />
               {/* Candidatos routes */}
-              <Route path="/candidatos" element={<ProtectedRoute><CandidatosList /></ProtectedRoute>} />
-              <Route path="/candidatos/nuevo" element={<ProtectedRoute><div>Nuevo Candidato (Coming Soon)</div></ProtectedRoute>} />
-              <Route path="/candidatos/buscar" element={<ProtectedRoute><div>Búsqueda (Coming Soon)</div></ProtectedRoute>} />
-              <Route path="/empleados" element={<ProtectedRoute><div>Empleados (Coming Soon)</div></ProtectedRoute>} />
-              <Route path="/reportes" element={<ProtectedRoute><div>Reportes (Coming Soon)</div></ProtectedRoute>} />
-              <Route path="/configuracion" element={<ProtectedRoute><div>Configuración (Coming Soon)</div></ProtectedRoute>} />
+              <Route path="/candidatos" element={<ProtectedRoute><Layout><CandidatosList /></Layout></ProtectedRoute>} />
+              <Route path="/candidatos/nuevo" element={<ProtectedRoute><Layout><div>Nuevo Candidato (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/candidatos/buscar" element={<ProtectedRoute><Layout><div>Búsqueda (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/empleados" element={<ProtectedRoute><Layout><div>Empleados (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/reportes" element={<ProtectedRoute><Layout><div>Reportes (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/configuracion" element={<ProtectedRoute><Layout><div>Configuración (Coming Soon)</div></Layout></ProtectedRoute>} />
             </Routes>
             
             <Toaster 
