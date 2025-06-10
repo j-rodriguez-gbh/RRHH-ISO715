@@ -53,10 +53,16 @@ export interface ExperienciaLaboral {
 export interface Puesto {
   id: number;
   nombre: string;
-  nivel_riesgo: 'Alto' | 'Medio' | 'Bajo';
+  descripcion?: string;
+  departamento?: string;
+  nivel: 'junior' | 'mid' | 'senior' | 'lead' | 'manager' | 'director';
   salario_min?: number;
   salario_max?: number;
+  requisitos?: string;
+  experiencia_minima: number;
   activo: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type CandidatoEstado = 
