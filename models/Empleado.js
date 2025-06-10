@@ -40,7 +40,8 @@ const Empleado = sequelize.define('Empleado', {
   },
   tipo_contrato: {
     type: DataTypes.ENUM('indefinido', 'temporal', 'practicas', 'consultoria'),
-    allowNull: false
+    allowNull: false,
+    defaultValue: 'indefinido'
   },
   estado: {
     type: DataTypes.ENUM('activo', 'inactivo', 'vacaciones', 'licencia'),

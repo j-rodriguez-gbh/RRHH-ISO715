@@ -281,9 +281,33 @@ class CandidatoController {
       }
 
       const newState = this.stateService.getNextState(candidato.estado, event);
+      
+      // Create historical observation entry
+      let updatedObservaciones = candidato.observaciones || '';
+      
+      if (observaciones && observaciones.trim()) {
+        const timestamp = new Date().toLocaleString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'America/Santo_Domingo'
+        });
+        
+        const stateChangeDescription = this.stateService.getTransitionDescription(event);
+        const newEntry = `[${timestamp}] ${stateChangeDescription}: ${observaciones.trim()}`;
+        
+        if (updatedObservaciones) {
+          updatedObservaciones += '\n\n' + newEntry;
+        } else {
+          updatedObservaciones = newEntry;
+        }
+      }
+      
       await candidato.update({ 
         estado: newState,
-        observaciones: observaciones || candidato.observaciones
+        observaciones: updatedObservaciones
       });
 
       res.json({

@@ -3,6 +3,7 @@ const router = express.Router();
 const { Empleado, Candidato, Puesto } = require('../models');
 const { authenticated, hrManagerOrAdmin } = require('../middleware/auth');
 const { Op } = require('sequelize');
+const { sequelize } = require('../models');
 
 router.use(authenticated);
 
@@ -99,26 +100,32 @@ router.put('/:id', hrManagerOrAdmin, async (req, res) => {
 
 // Convertir candidato a empleado
 router.post('/from-candidato/:candidatoId', hrManagerOrAdmin, async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const { candidatoId } = req.params;
-    const { codigo_empleado, puestoId, fecha_ingreso, salario_acordado, estado = 'activo' } = req.body;
+    const { codigo_empleado, puestoId, fecha_ingreso, salario_acordado, estado = 'activo', tipo_contrato = 'indefinido' } = req.body;
 
     // Verificar que el candidato existe y está aprobado
-    const candidato = await Candidato.findByPk(candidatoId);
+    const candidato = await Candidato.findByPk(candidatoId, { transaction });
     if (!candidato) {
+      await transaction.rollback();
       return res.status(404).json({ error: 'Candidato no encontrado' });
     }
     
     if (candidato.estado !== 'aprobado') {
+      await transaction.rollback();
       return res.status(400).json({ error: 'Solo candidatos aprobados pueden ser contratados' });
     }
 
     // Verificar que no ya sea empleado
     const existingEmpleado = await Empleado.findOne({
-      where: { candidatoId: candidatoId }
+      where: { candidatoId: candidatoId },
+      transaction
     });
     
     if (existingEmpleado) {
+      await transaction.rollback();
       return res.status(400).json({ error: 'Este candidato ya es empleado' });
     }
 
@@ -129,13 +136,17 @@ router.post('/from-candidato/:candidatoId', hrManagerOrAdmin, async (req, res) =
       puestoId: parseInt(puestoId),
       fecha_ingreso,
       salario_acordado: parseFloat(salario_acordado),
-      estado
-    });
+      estado,
+      tipo_contrato
+    }, { transaction });
 
     // Actualizar estado del candidato a 'contratado'
-    await candidato.update({ estado: 'contratado' });
+    await candidato.update({ estado: 'contratado' }, { transaction });
+    
+    // Commit transaction
+    await transaction.commit();
 
-    // Devolver empleado con relaciones
+    // Devolver empleado con relaciones (fuera de la transacción)
     const empleadoCompleto = await Empleado.findByPk(empleado.id, {
       include: [
         { model: Candidato },
@@ -145,8 +156,9 @@ router.post('/from-candidato/:candidatoId', hrManagerOrAdmin, async (req, res) =
 
     res.status(201).json(empleadoCompleto);
   } catch (error) {
+    await transaction.rollback();
     console.error('Error converting candidato to empleado:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: 'Error interno del servidor', details: error.message });
   }
 });
 

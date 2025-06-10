@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -110,6 +110,14 @@ export const CandidatoDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  // Modal state for observations
+  const [showObservationModal, setShowObservationModal] = useState(false);
+  const [pendingStateChange, setPendingStateChange] = useState<{
+    event: string;
+    description: string;
+  } | null>(null);
+  const [observaciones, setObservaciones] = useState('');
 
   const candidatoId = id ? parseInt(id, 10) : 0;
 
@@ -168,14 +176,30 @@ export const CandidatoDetail: React.FC = () => {
   const { candidato, validTransitions } = data;
 
   const handleStateChange = (event: string, description: string) => {
-    const observaciones = prompt(`${description}\n\n¿Deseas agregar alguna observación?`);
-    if (observaciones !== null) { // null means user cancelled
-      changeStateMutation.mutate({ event, observaciones: observaciones || undefined });
-    }
+    setPendingStateChange({ event, description });
+    setShowObservationModal(true);
   };
 
   const handleHire = () => {
     navigate(`/candidatos/${candidatoId}/contratar`);
+  };
+
+  const handleConfirmStateChange = () => {
+    if (pendingStateChange) {
+      changeStateMutation.mutate({ 
+        event: pendingStateChange.event, 
+        observaciones: observaciones.trim() || undefined 
+      });
+      setShowObservationModal(false);
+      setPendingStateChange(null);
+      setObservaciones('');
+    }
+  };
+
+  const handleCancelStateChange = () => {
+    setShowObservationModal(false);
+    setPendingStateChange(null);
+    setObservaciones('');
   };
 
   return (
@@ -466,6 +490,93 @@ export const CandidatoDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Observation Modal */}
+      {showObservationModal && pendingStateChange && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCancelStateChange}></div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${
+                  pendingStateChange.event === 'REJECT' || pendingStateChange.event === 'REJECT_FINAL' || pendingStateChange.event === 'FAIL_INITIAL' || pendingStateChange.event === 'FAIL_TECHNICAL'
+                    ? 'bg-red-100'
+                    : pendingStateChange.event === 'APPROVE' || pendingStateChange.event === 'PASS_INITIAL' || pendingStateChange.event === 'PASS_TECHNICAL' 
+                    ? 'bg-green-100'
+                    : 'bg-blue-100'
+                }`}>
+                  {getActionIcon(pendingStateChange.event)}
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    {pendingStateChange.description}
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      ¿Deseas agregar alguna observación para este cambio de estado?
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="observaciones" className="block text-sm font-medium text-gray-700 mb-2">
+                      Observaciones (opcional)
+                    </label>
+                    {candidato.observaciones && (
+                      <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                        <h4 className="text-xs font-medium text-gray-600 mb-2">Historial de observaciones:</h4>
+                        <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                          {candidato.observaciones}
+                        </div>
+                      </div>
+                    )}
+                    <textarea
+                      id="observaciones"
+                      value={observaciones}
+                      onChange={(e) => setObservaciones(e.target.value)}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Escribe tus observaciones aquí..."
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleConfirmStateChange}
+                  disabled={changeStateMutation.isPending}
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                    pendingStateChange.event === 'REJECT' || pendingStateChange.event === 'REJECT_FINAL' || pendingStateChange.event === 'FAIL_INITIAL' || pendingStateChange.event === 'FAIL_TECHNICAL'
+                      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                      : pendingStateChange.event === 'APPROVE' || pendingStateChange.event === 'PASS_INITIAL' || pendingStateChange.event === 'PASS_TECHNICAL'
+                      ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                  }`}
+                >
+                  {changeStateMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Procesando...
+                    </div>
+                  ) : (
+                    'Confirmar'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelStateChange}
+                  disabled={changeStateMutation.isPending}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 

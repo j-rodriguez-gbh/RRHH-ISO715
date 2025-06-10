@@ -11,8 +11,7 @@ import {
   ChevronRight,
   Users,
   X,
-  UserMinus,
-  RefreshCw
+  UserMinus
 } from 'lucide-react';
 import { empleadosAPI } from '../services/api';
 import type { Empleado } from '../types';
@@ -132,7 +131,6 @@ export const EmpleadosList: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // No need to do anything here, the useEffect will handle the debounced search
   };
 
   const clearFilters = () => {
@@ -159,10 +157,6 @@ export const EmpleadosList: React.FC = () => {
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingEmpleado(undefined);
-    refetch();
-  };
-
-  const handleRefresh = () => {
     refetch();
   };
 
@@ -227,24 +221,13 @@ export const EmpleadosList: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={handleRefresh}
-                className="btn-secondary flex items-center space-x-2"
-                title="Actualizar lista"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span>Actualizar</span>
-              </button>
-              
-              <button 
-                onClick={handleNewEmpleado}
-                className="btn-primary flex items-center space-x-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Nuevo Empleado</span>
-              </button>
-            </div>
+            <button 
+              onClick={handleNewEmpleado}
+              className="btn-primary flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Nuevo Empleado</span>
+            </button>
           </div>
           
           {/* Search and Filters */}
