@@ -271,9 +271,9 @@ async function seedDatabase() {
 
     console.log('\n🎉 Seed completado exitosamente!');
     console.log('\n📋 Usuarios creados:');
-    console.log('   Admin: admin@empresa.com / 123456');
-    console.log('   HR Manager: hr@empresa.com / 123456');
-    console.log('   Recruiter: recruiter@empresa.com / 123456');
+    console.log('   Admin: admin@empresa.com / admin123');
+    console.log('   HR Manager: hr@empresa.com / hr123');
+    console.log('   Recruiter: recruiter@empresa.com / recruiter123');
     console.log('\n📊 Datos de ejemplo creados:');
     console.log(`   ${competencias.length} competencias`);
     console.log(`   ${idiomas.length} idiomas`);
