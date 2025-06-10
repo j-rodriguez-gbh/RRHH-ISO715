@@ -119,6 +119,13 @@ export const CandidatoDetail: React.FC = () => {
     enabled: !!candidatoId,
   });
 
+  // Debug logging
+  console.log('CandidatoDetail - data received:', data);
+  if (data) {
+    console.log('Candidato estado:', data.candidato?.estado);
+    console.log('Valid transitions:', data.validTransitions);
+  }
+
   const changeStateMutation = useMutation({
     mutationFn: ({ event, observaciones }: { event: string; observaciones?: string }) =>
       candidatosAPI.changeState(candidatoId, event, observaciones),
