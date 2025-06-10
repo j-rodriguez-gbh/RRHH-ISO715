@@ -20,15 +20,20 @@ export interface Competencia {
   id: number;
   nombre: string;
   descripcion?: string;
-  tipo: 'tecnica' | 'blanda' | 'gerencial';
-  nivel_requerido: 'basico' | 'intermedio' | 'avanzado' | 'experto';
+  tipo?: 'tecnica' | 'blanda' | 'gerencial';
+  nivel_requerido?: 'basico' | 'intermedio' | 'avanzado' | 'experto';
   activa: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Idioma {
   id: number;
   nombre: string;
+  codigo?: string;
   activo: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Capacitacion {
@@ -38,6 +43,18 @@ export interface Capacitacion {
   fecha_desde?: string;
   fecha_hasta?: string;
   institucion?: string;
+}
+
+export interface Departamento {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  gerente?: string;
+  codigo?: string;
+  activo: boolean;
+  empleados_count?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ExperienciaLaboral {

@@ -15,6 +15,8 @@ import { HireCandidatoWrapper } from './components/HireCandidatoWrapper';
 import { Configuracion } from './components/Configuracion';
 import { PuestosPage } from './components/PuestosPage';
 import { CandidatoFormWrapper } from './components/CandidatoFormWrapper';
+import { CandidatosBusquedaSimple } from './components/CandidatosBusquedaSimple';
+import { ReportesPage } from './components/ReportesPage';
 import { Layout } from './components/Layout';
 
 // Create a client
@@ -87,7 +89,7 @@ function App() {
               <Route path="/candidatos" element={<ProtectedRoute><Layout><CandidatosList /></Layout></ProtectedRoute>} />
               <Route path="/candidatos/:id" element={<ProtectedRoute><Layout><CandidatoDetail /></Layout></ProtectedRoute>} />
               <Route path="/candidatos/nuevo" element={<ProtectedRoute><Layout><CandidatoFormWrapper /></Layout></ProtectedRoute>} />
-              <Route path="/candidatos/buscar" element={<ProtectedRoute><Layout><div>Búsqueda (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/candidatos/buscar" element={<ProtectedRoute><Layout><CandidatosBusquedaSimple /></Layout></ProtectedRoute>} />
               {/* Empleados routes */}
               <Route path="/empleados" element={<ProtectedRoute><Layout><EmpleadosList /></Layout></ProtectedRoute>} />
               <Route path="/empleados/:id" element={<ProtectedRoute><Layout><EmpleadoDetail /></Layout></ProtectedRoute>} />
@@ -96,7 +98,7 @@ function App() {
               <Route path="/candidatos/:id/contratar" element={<ProtectedRoute><Layout><HireCandidatoWrapper /></Layout></ProtectedRoute>} />
               
               <Route path="/puestos" element={<ProtectedRoute><Layout><PuestosPage /></Layout></ProtectedRoute>} />
-              <Route path="/reportes" element={<ProtectedRoute><Layout><div>Reportes (Coming Soon)</div></Layout></ProtectedRoute>} />
+              <Route path="/reportes" element={<ProtectedRoute><Layout><ReportesPage /></Layout></ProtectedRoute>} />
               <Route path="/configuracion" element={<ProtectedRoute><Layout><Configuracion /></Layout></ProtectedRoute>} />
             </Routes>
             

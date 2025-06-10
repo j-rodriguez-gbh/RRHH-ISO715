@@ -9,7 +9,8 @@ import type {
   Idioma,
   Capacitacion,
   Puesto,
-  Empleado
+  Empleado,
+  Departamento
 } from '../types';
 
 const API_URL = 'http://localhost:3001/api';
@@ -114,9 +115,9 @@ export const candidatosAPI = {
 };
 
 export const competenciasAPI = {
-  getAll: async (): Promise<Competencia[]> => {
-    const response = await api.get('/competencias');
-    return response.data.competencias || response.data;
+  getAll: async (params?: { search?: string; activa?: boolean }): Promise<{ competencias: Competencia[] }> => {
+    const response = await api.get('/competencias', { params });
+    return response.data.competencias ? response.data : { competencias: response.data };
   },
   
   create: async (competencia: { nombre: string; descripcion?: string }): Promise<Competencia> => {
@@ -124,7 +125,7 @@ export const competenciasAPI = {
     return response.data;
   },
   
-  update: async (id: number, competencia: { nombre?: string; descripcion?: string; activo?: boolean }): Promise<Competencia> => {
+  update: async (id: number, competencia: { nombre?: string; descripcion?: string; activa?: boolean }): Promise<Competencia> => {
     const response = await api.put(`/competencias/${id}`, competencia);
     return response.data;
   },
@@ -136,17 +137,17 @@ export const competenciasAPI = {
 };
 
 export const idiomasAPI = {
-  getAll: async (): Promise<Idioma[]> => {
-    const response = await api.get('/idiomas');
-    return response.data.idiomas || response.data;
+  getAll: async (params?: { search?: string; activo?: boolean }): Promise<{ idiomas: Idioma[] }> => {
+    const response = await api.get('/idiomas', { params });
+    return response.data.idiomas ? response.data : { idiomas: response.data };
   },
   
-  create: async (idioma: { nombre: string }): Promise<Idioma> => {
+  create: async (idioma: { nombre: string; codigo?: string }): Promise<Idioma> => {
     const response = await api.post('/idiomas', idioma);
     return response.data;
   },
   
-  update: async (id: number, idioma: { nombre?: string; activo?: boolean }): Promise<Idioma> => {
+  update: async (id: number, idioma: { nombre?: string; codigo?: string; activo?: boolean }): Promise<Idioma> => {
     const response = await api.put(`/idiomas/${id}`, idioma);
     return response.data;
   },
@@ -202,7 +203,14 @@ export const puestosAPI = {
 };
 
 export const empleadosAPI = {
-  getAll: async (params?: { page?: number; limit?: number; estado?: string; search?: string }) => {
+  getAll: async (params?: { 
+    page?: number; 
+    limit?: number; 
+    estado?: string; 
+    search?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+  }) => {
     const response = await api.get('/empleados', { params });
     return response.data;
   },
@@ -240,5 +248,56 @@ export const empleadosAPI = {
 };
 
 
+
+export const departamentosAPI = {
+  getAll: async (params?: { search?: string; activo?: boolean }): Promise<{ departamentos: Departamento[] }> => {
+    const response = await api.get('/departamentos', { params });
+    return response.data.departamentos ? response.data : { departamentos: response.data };
+  },
+  
+  create: async (departamento: Omit<Departamento, 'id' | 'createdAt' | 'updatedAt'>): Promise<Departamento> => {
+    const response = await api.post('/departamentos', departamento);
+    return response.data;
+  },
+  
+  update: async (id: number, departamento: Partial<Omit<Departamento, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Departamento> => {
+    const response = await api.put(`/departamentos/${id}`, departamento);
+    return response.data;
+  },
+  
+  delete: async (id: number) => {
+    const response = await api.delete(`/departamentos/${id}`);
+    return response.data;
+  },
+};
+
+export const reportesAPI = {
+  newEmployeesReport: async (fechaInicio: string, fechaFin: string): Promise<Blob> => {
+    const response = await api.get('/reports/new-employees', {
+      params: { fechaInicio, fechaFin },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  candidatesSummaryReport: async (): Promise<Blob> => {
+    const response = await api.get('/reports/candidates-summary', {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  // Vista previa de datos del reporte sin generar PDF
+  newEmployeesReportData: async (fechaInicio: string, fechaFin: string) => {
+    const response = await api.get('/empleados', {
+      params: {
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+        limit: 1000 // Alto límite para obtener todos los empleados del período
+      }
+    });
+    return response.data;
+  },
+};
 
 export { getToken, setToken, removeToken }; 

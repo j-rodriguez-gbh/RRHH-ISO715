@@ -82,15 +82,17 @@ export default function CandidatoForm({ candidatoId, onSuccess, onCancel }: Prop
   });
 
   // Queries para obtener datos de referencia
-  const { data: competencias = [] } = useQuery({
+  const { data: competenciasData } = useQuery({
     queryKey: ['competencias'],
-    queryFn: competenciasAPI.getAll,
+    queryFn: () => competenciasAPI.getAll(),
   });
+  const competencias = competenciasData?.competencias || [];
 
-  const { data: idiomas = [] } = useQuery({
+  const { data: idiomasData } = useQuery({
     queryKey: ['idiomas'],
-    queryFn: idiomasAPI.getAll,
+    queryFn: () => idiomasAPI.getAll(),
   });
+  const idiomas = idiomasData?.idiomas || [];
 
   const { data: capacitaciones = [] } = useQuery({
     queryKey: ['capacitaciones'],

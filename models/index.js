@@ -9,6 +9,7 @@ const Puesto = require('./Puesto');
 const Candidato = require('./Candidato');
 const ExperienciaLaboral = require('./ExperienciaLaboral');
 const Empleado = require('./Empleado');
+const Departamento = require('./Departamento');
 
 // Define relationships
 // Candidato relationships
@@ -77,5 +78,6 @@ module.exports = {
   Puesto,
   Candidato,
   ExperienciaLaboral,
-  Empleado
+  Empleado,
+  Departamento
 }; 

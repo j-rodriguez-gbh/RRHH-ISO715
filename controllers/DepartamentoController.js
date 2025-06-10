@@ -1,8 +1,8 @@
-const { Idioma } = require('../models');
+const { Departamento } = require('../models');
 const Joi = require('joi');
 const { Op } = require('sequelize');
 
-class IdiomaController {
+class DepartamentoController {
   static async getAll(req, res) {
     try {
       const { page = 1, limit = 10, search, activo } = req.query;
@@ -18,11 +18,12 @@ class IdiomaController {
       if (search) {
         whereClause[Op.or] = [
           { nombre: { [Op.iLike]: `%${search}%` } },
+          { descripcion: { [Op.iLike]: `%${search}%` } },
           { codigo: { [Op.iLike]: `%${search}%` } }
         ];
       }
 
-      const idiomas = await Idioma.findAndCountAll({
+      const departamentos = await Departamento.findAndCountAll({
         where: whereClause,
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -30,13 +31,13 @@ class IdiomaController {
       });
 
       res.json({
-        idiomas: idiomas.rows,
-        totalPages: Math.ceil(idiomas.count / limit),
+        departamentos: departamentos.rows,
+        totalPages: Math.ceil(departamentos.count / limit),
         currentPage: parseInt(page),
-        total: idiomas.count
+        total: departamentos.count
       });
     } catch (error) {
-      console.error('Error getting idiomas:', error);
+      console.error('Error getting departamentos:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
@@ -44,15 +45,15 @@ class IdiomaController {
   static async getById(req, res) {
     try {
       const { id } = req.params;
-      const idioma = await Idioma.findByPk(id);
+      const departamento = await Departamento.findByPk(id);
 
-      if (!idioma) {
-        return res.status(404).json({ error: 'Idioma no encontrado' });
+      if (!departamento) {
+        return res.status(404).json({ error: 'Departamento no encontrado' });
       }
 
-      res.json(idioma);
+      res.json(departamento);
     } catch (error) {
-      console.error('Error getting idioma:', error);
+      console.error('Error getting departamento:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
@@ -60,8 +61,10 @@ class IdiomaController {
   static async create(req, res) {
     try {
       const schema = Joi.object({
-        nombre: Joi.string().max(50).required(),
-        codigo: Joi.string().max(5).required()
+        nombre: Joi.string().max(100).required(),
+        descripcion: Joi.string().optional(),
+        gerente: Joi.string().max(100).optional(),
+        codigo: Joi.string().max(10).optional()
       });
 
       const { error, value } = schema.validate(req.body);
@@ -69,23 +72,23 @@ class IdiomaController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const existingIdioma = await Idioma.findOne({ 
+      const existingDepartamento = await Departamento.findOne({ 
         where: { 
           [Op.or]: [
             { nombre: value.nombre },
-            { codigo: value.codigo }
+            ...(value.codigo ? [{ codigo: value.codigo }] : [])
           ]
         } 
       });
       
-      if (existingIdioma) {
-        return res.status(409).json({ error: 'Ya existe un idioma con este nombre o código' });
+      if (existingDepartamento) {
+        return res.status(409).json({ error: 'Ya existe un departamento con este nombre o código' });
       }
 
-      const idioma = await Idioma.create(value);
-      res.status(201).json(idioma);
+      const departamento = await Departamento.create(value);
+      res.status(201).json(departamento);
     } catch (error) {
-      console.error('Error creating idioma:', error);
+      console.error('Error creating departamento:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
@@ -93,15 +96,17 @@ class IdiomaController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const idioma = await Idioma.findByPk(id);
+      const departamento = await Departamento.findByPk(id);
 
-      if (!idioma) {
-        return res.status(404).json({ error: 'Idioma no encontrado' });
+      if (!departamento) {
+        return res.status(404).json({ error: 'Departamento no encontrado' });
       }
 
       const schema = Joi.object({
-        nombre: Joi.string().max(50).optional(),
-        codigo: Joi.string().max(5).optional(),
+        nombre: Joi.string().max(100).optional(),
+        descripcion: Joi.string().optional(),
+        gerente: Joi.string().max(100).optional(),
+        codigo: Joi.string().max(10).optional(),
         activo: Joi.boolean().optional()
       });
 
@@ -110,10 +115,10 @@ class IdiomaController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      await idioma.update(value);
-      res.json(idioma);
+      await departamento.update(value);
+      res.json(departamento);
     } catch (error) {
-      console.error('Error updating idioma:', error);
+      console.error('Error updating departamento:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
@@ -121,19 +126,20 @@ class IdiomaController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const idioma = await Idioma.findByPk(id);
+      const departamento = await Departamento.findByPk(id);
 
-      if (!idioma) {
-        return res.status(404).json({ error: 'Idioma no encontrado' });
+      if (!departamento) {
+        return res.status(404).json({ error: 'Departamento no encontrado' });
       }
 
-      await idioma.update({ activo: false });
-      res.json({ message: 'Idioma eliminado exitosamente' });
+      // Soft delete
+      await departamento.update({ activo: false });
+      res.json({ message: 'Departamento eliminado exitosamente' });
     } catch (error) {
-      console.error('Error deleting idioma:', error);
+      console.error('Error deleting departamento:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
 }
 
-module.exports = IdiomaController; 
+module.exports = DepartamentoController; 

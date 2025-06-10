@@ -9,11 +9,26 @@ router.use(authenticated);
 
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10, estado, search } = req.query;
+    const { page = 1, limit = 10, estado, search, fecha_inicio, fecha_fin } = req.query;
     const offset = (page - 1) * limit;
 
     let whereClause = {};
     if (estado) whereClause.estado = estado;
+    
+    // Filtros por fecha de ingreso
+    if (fecha_inicio && fecha_fin) {
+      whereClause.fecha_ingreso = {
+        [Op.between]: [fecha_inicio, fecha_fin]
+      };
+    } else if (fecha_inicio) {
+      whereClause.fecha_ingreso = {
+        [Op.gte]: fecha_inicio
+      };
+    } else if (fecha_fin) {
+      whereClause.fecha_ingreso = {
+        [Op.lte]: fecha_fin
+      };
+    }
 
     let candidatoWhere = {};
     if (search) {

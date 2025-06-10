@@ -42,6 +42,7 @@ app.use('/api/idiomas', require('./routes/idiomas'));
 app.use('/api/capacitaciones', require('./routes/capacitaciones'));
 app.use('/api/puestos', require('./routes/puestos'));
 app.use('/api/empleados', require('./routes/empleados'));
+app.use('/api/departamentos', require('./routes/departamentos'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

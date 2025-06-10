@@ -1,24 +1,26 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { candidatosAPI, competenciasAPI, idiomasAPI, capacitacionesAPI } from '../services/api';
+import { competenciasAPI, idiomasAPI, capacitacionesAPI } from '../services/api';
+import type { Competencia, Idioma } from '../types';
 
 interface Props {
-  candidatoId?: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export default function CandidatoFormSimple({ candidatoId, onSuccess, onCancel }: Props) {
+export default function CandidatoFormSimple({ onSuccess, onCancel }: Props) {
   // Test queries
-  const { data: competencias, isLoading: loadingCompetencias, error: errorCompetencias } = useQuery({
+  const { data: competenciasData, isLoading: loadingCompetencias, error: errorCompetencias } = useQuery({
     queryKey: ['competencias'],
-    queryFn: competenciasAPI.getAll,
+    queryFn: () => competenciasAPI.getAll(),
   });
+  const competencias = competenciasData?.competencias || [];
 
-  const { data: idiomas, isLoading: loadingIdiomas, error: errorIdiomas } = useQuery({
+  const { data: idiomasData, isLoading: loadingIdiomas, error: errorIdiomas } = useQuery({
     queryKey: ['idiomas'],
-    queryFn: idiomasAPI.getAll,
+    queryFn: () => idiomasAPI.getAll(),
   });
+  const idiomas = idiomasData?.idiomas || [];
 
   const { data: capacitaciones, isLoading: loadingCapacitaciones, error: errorCapacitaciones } = useQuery({
     queryKey: ['capacitaciones'],
@@ -86,7 +88,7 @@ export default function CandidatoFormSimple({ candidatoId, onSuccess, onCancel }
 
         <div className="space-y-2">
           <h4 className="font-medium text-gray-900">Competencias:</h4>
-          {competencias?.map((comp: any) => (
+          {competencias?.map((comp: Competencia) => (
             <div key={comp.id} className="text-sm text-gray-600">
               {comp.id}: {comp.nombre}
             </div>
@@ -95,7 +97,7 @@ export default function CandidatoFormSimple({ candidatoId, onSuccess, onCancel }
 
         <div className="space-y-2">
           <h4 className="font-medium text-gray-900">Idiomas:</h4>
-          {idiomas?.map((idioma: any) => (
+          {idiomas?.map((idioma: Idioma) => (
             <div key={idioma.id} className="text-sm text-gray-600">
               {idioma.id}: {idioma.nombre}
             </div>
