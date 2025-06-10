@@ -48,7 +48,9 @@ class CandidatoController {
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        distinct: true,
+        col: 'id'
       });
 
       res.json({
