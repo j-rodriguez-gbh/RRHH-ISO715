@@ -11,6 +11,10 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { PuestosManager } from './PuestosManager';
+import { CompetenciasManager } from './CompetenciasManager';
+import { IdiomasManager } from './IdiomasManager';
+import { DepartamentosManager } from './DepartamentosManager';
+import { SistemaManager } from './SistemaManager';
 
 type ConfigSection = 'puestos' | 'competencias' | 'idiomas' | 'departamentos' | 'sistema';
 
@@ -180,21 +184,11 @@ const ConfigSectionDetail: React.FC<ConfigSectionDetailProps> = ({ section, onBa
           </button>
         </div>
 
-        {section === 'puestos' ? (
-          <PuestosManager />
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="text-center py-12">
-              <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {section.charAt(0).toUpperCase() + section.slice(1)}
-              </h3>
-              <p className="text-gray-600">
-                Configuración de {section} - Próximamente disponible
-              </p>
-            </div>
-          </div>
-        )}
+        {section === 'puestos' && <PuestosManager />}
+        {section === 'competencias' && <CompetenciasManager />}
+        {section === 'idiomas' && <IdiomasManager />}
+        {section === 'departamentos' && <DepartamentosManager />}
+        {section === 'sistema' && <SistemaManager />}
       </div>
     </div>
   );

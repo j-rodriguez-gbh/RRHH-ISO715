@@ -343,43 +343,116 @@ class CandidatoController {
       const { puestoId, competencias, idiomas, capacitaciones, experiencia_min } = req.query;
 
       let whereClause = {};
-      let includeClause = [];
+      let includeClause = [
+        // Always include all associations for frontend scoring
+        {
+          model: Competencia,
+          through: { attributes: [] },
+          required: false
+        },
+        {
+          model: Idioma,
+          through: { attributes: [] },
+          required: false
+        },
+        {
+          model: Capacitacion,
+          through: { attributes: [] },
+          required: false
+        },
+        {
+          model: ExperienciaLaboral,
+          required: false
+        }
+      ];
 
-      // Add filters based on search criteria
+      // Filter by puesto if specified
+      if (puestoId) {
+        whereClause.puestoId = parseInt(puestoId);
+      }
+
+      // Build subqueries for optional filters (OR logic for flexible matching)
+      let candidatosFilteredByCompetencias = null;
+      let candidatosFilteredByIdiomas = null;
+      let candidatosFilteredByCapacitaciones = null;
+
       if (competencias) {
         const competenciaIds = competencias.split(',').map(id => parseInt(id));
-        includeClause.push({
-          model: Competencia,
-          where: { id: { [Op.in]: competenciaIds } },
-          through: { attributes: [] }
+        candidatosFilteredByCompetencias = await Candidato.findAll({
+          include: [{
+            model: Competencia,
+            where: { id: { [Op.in]: competenciaIds } },
+            through: { attributes: [] }
+          }],
+          attributes: ['id']
         });
       }
 
       if (idiomas) {
         const idiomaIds = idiomas.split(',').map(id => parseInt(id));
-        includeClause.push({
-          model: Idioma,
-          where: { id: { [Op.in]: idiomaIds } },
-          through: { attributes: [] }
+        candidatosFilteredByIdiomas = await Candidato.findAll({
+          include: [{
+            model: Idioma,
+            where: { id: { [Op.in]: idiomaIds } },
+            through: { attributes: [] }
+          }],
+          attributes: ['id']
         });
       }
 
       if (capacitaciones) {
         const capacitacionIds = capacitaciones.split(',').map(id => parseInt(id));
-        includeClause.push({
-          model: Capacitacion,
-          where: { id: { [Op.in]: capacitacionIds } },
-          through: { attributes: [] }
+        candidatosFilteredByCapacitaciones = await Candidato.findAll({
+          include: [{
+            model: Capacitacion,
+            where: { id: { [Op.in]: capacitacionIds } },
+            through: { attributes: [] }
+          }],
+          attributes: ['id']
         });
       }
 
-      const candidatos = await Candidato.findAll({
+      // Get candidate IDs that match any of the criteria
+      let candidateIds = new Set();
+      let hasFilters = false;
+
+      if (candidatosFilteredByCompetencias) {
+        candidatosFilteredByCompetencias.forEach(c => candidateIds.add(c.id));
+        hasFilters = true;
+      }
+
+      if (candidatosFilteredByIdiomas) {
+        candidatosFilteredByIdiomas.forEach(c => candidateIds.add(c.id));
+        hasFilters = true;
+      }
+
+      if (candidatosFilteredByCapacitaciones) {
+        candidatosFilteredByCapacitaciones.forEach(c => candidateIds.add(c.id));
+        hasFilters = true;
+      }
+
+      // If filters were applied, limit results to matching candidates
+      if (hasFilters) {
+        whereClause.id = { [Op.in]: Array.from(candidateIds) };
+      }
+
+      // Get all candidates with complete data
+      let candidatos = await Candidato.findAll({
         where: whereClause,
         include: includeClause,
-        distinct: true
+        distinct: true,
+        order: [['fecha_aplicacion', 'DESC']]
       });
 
-      res.json(candidatos);
+      // Filter by experience if specified
+      if (experiencia_min) {
+        const minExperience = parseInt(experiencia_min);
+        candidatos = candidatos.filter(candidato => {
+          return candidato.ExperienciaLaborals && candidato.ExperienciaLaborals.length >= minExperience;
+        });
+      }
+
+      res.json({ candidatos });
     } catch (error) {
       console.error('Error searching candidatos:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
