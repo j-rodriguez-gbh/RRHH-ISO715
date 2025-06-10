@@ -388,7 +388,7 @@ export const CandidatosList: React.FC = () => {
                 </p>
                 {!search && !estadoFilter && (
                   <div className="mt-6">
-                    <button onClick={handleNewCandidato} className="btn-primary">
+                    <button onClick={handleNewCandidato} className="btn-primary inline-flex items-center">
                       <Plus className="h-4 w-4 mr-2" />
                       Nuevo Candidato
                     </button>
