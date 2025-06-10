@@ -1,12 +1,12 @@
 import React from 'react';
 import { 
   Users, 
-  UserPlus, 
   FileText, 
   Settings,
   BarChart3,
   Search,
-  CheckCircle
+  CheckCircle,
+  Briefcase
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -21,13 +21,6 @@ export const Dashboard: React.FC = () => {
       color: 'bg-blue-500',
     },
     {
-      title: 'Nuevo Candidato',
-      description: 'Añadir nuevo candidato al sistema',
-      icon: UserPlus,
-      href: '/candidatos/nuevo',
-      color: 'bg-green-500',
-    },
-    {
       title: 'Búsqueda Avanzada',
       description: 'Buscar candidatos por competencias',
       icon: Search,
@@ -40,6 +33,13 @@ export const Dashboard: React.FC = () => {
       icon: CheckCircle,
       href: '/empleados',
       color: 'bg-emerald-500',
+    },
+    {
+      title: 'Puestos de Trabajo',
+      description: 'Gestionar puestos y vacantes disponibles',
+      icon: Briefcase,
+      href: '/puestos',
+      color: 'bg-indigo-500',
     },
     {
       title: 'Reportes',
