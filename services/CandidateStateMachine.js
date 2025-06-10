@@ -60,26 +60,27 @@ class CandidateStateService {
   }
 
   getValidTransitions(currentState) {
-    const service = interpret(this.machine).start();
-    service.state.value = currentState;
-    
     const transitions = [];
-    const state = service.state;
     
-    if (state.nextEvents) {
-      state.nextEvents.forEach(event => {
-        const nextState = service.machine.transition(currentState, event);
-        if (nextState.value !== currentState) {
-          transitions.push({
+    // Get the state definition from the machine
+    const stateNode = this.machine.states[currentState];
+    
+    if (stateNode && stateNode.on) {
+      // Iterate through all possible events for this state
+      Object.keys(stateNode.on).forEach(event => {
+        const nextState = this.getNextState(currentState, event);
+        
+        if (nextState !== currentState) {
+          const transition = {
             event,
-            nextState: nextState.value,
+            nextState,
             description: this.getTransitionDescription(event)
-          });
+          };
+          transitions.push(transition);
         }
       });
     }
     
-    service.stop();
     return transitions;
   }
 
@@ -91,10 +92,11 @@ class CandidateStateService {
   }
 
   getNextState(currentState, event) {
+    // Use XState's machine.transition method to get the correct next state
     const service = interpret(this.machine).start();
-    const nextState = service.machine.transition(currentState, event);
+    const state = service.machine.transition(currentState, event);
     service.stop();
-    return nextState.value;
+    return state.value;
   }
 
   getTransitionDescription(event) {

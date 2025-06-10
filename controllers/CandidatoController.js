@@ -113,7 +113,7 @@ class CandidatoController {
       const schema = Joi.object({
         nombres: Joi.string().max(100).required(),
         apellidos: Joi.string().max(100).required(),
-        email: Joi.string().email().max(100).required(),
+        email: Joi.string().email({ tlds: { allow: false } }).max(100).required(),
         telefono: Joi.string().max(20).optional(),
         documento_identidad: Joi.string().max(20).optional(),
         fecha_nacimiento: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional(),
@@ -195,7 +195,7 @@ class CandidatoController {
       const schema = Joi.object({
         nombres: Joi.string().max(100).optional(),
         apellidos: Joi.string().max(100).optional(),
-        email: Joi.string().email().max(100).optional(),
+        email: Joi.string().email({ tlds: { allow: false } }).max(100).optional(),
         telefono: Joi.string().max(20).optional(),
         documento_identidad: Joi.string().max(20).optional(),
         fecha_nacimiento: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional(),

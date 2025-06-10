@@ -180,9 +180,9 @@ export const capacitacionesAPI = {
 };
 
 export const puestosAPI = {
-  getAll: async (): Promise<Puesto[]> => {
-    const response = await api.get('/puestos');
-    return response.data;
+  getAll: async (params?: { activo?: boolean; limit?: number }): Promise<{ puestos: Puesto[] }> => {
+    const response = await api.get('/puestos', { params });
+    return response.data.puestos ? response.data : { puestos: response.data };
   },
   
   create: async (puesto: Omit<Puesto, 'id'>): Promise<Puesto> => {
@@ -202,8 +202,13 @@ export const puestosAPI = {
 };
 
 export const empleadosAPI = {
-  getAll: async (): Promise<Empleado[]> => {
-    const response = await api.get('/empleados');
+  getAll: async (params?: { page?: number; limit?: number; estado?: string; search?: string }) => {
+    const response = await api.get('/empleados', { params });
+    return response.data;
+  },
+  
+  getById: async (id: number): Promise<Empleado> => {
+    const response = await api.get(`/empleados/${id}`);
     return response.data;
   },
   
@@ -221,6 +226,19 @@ export const empleadosAPI = {
     const response = await api.delete(`/empleados/${id}`);
     return response.data;
   },
+
+  fromCandidato: async (candidatoId: number, data: {
+    codigo_empleado: string;
+    puestoId: number;
+    fecha_ingreso: string;
+    salario_acordado: number;
+    estado?: 'activo' | 'inactivo' | 'vacaciones' | 'licencia';
+  }): Promise<Empleado> => {
+    const response = await api.post(`/empleados/from-candidato/${candidatoId}`, data);
+    return response.data;
+  },
 };
+
+
 
 export { getToken, setToken, removeToken }; 
