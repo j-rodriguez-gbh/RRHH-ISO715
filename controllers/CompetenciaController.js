@@ -5,10 +5,16 @@ const { Op } = require('sequelize');
 class CompetenciaController {
   static async getAll(req, res) {
     try {
-      const { page = 1, limit = 10, search, tipo } = req.query;
+      const { page = 1, limit = 10, search, tipo, activa } = req.query;
       const offset = (page - 1) * limit;
 
-      const whereClause = { activa: true };
+      const whereClause = {};
+      
+      // Filtro por estado activa - respeta el parámetro del frontend
+      if (activa !== undefined) {
+        whereClause.activa = activa === 'true';
+      }
+      
       if (search) {
         whereClause[Op.or] = [
           { nombre: { [Op.iLike]: `%${search}%` } },

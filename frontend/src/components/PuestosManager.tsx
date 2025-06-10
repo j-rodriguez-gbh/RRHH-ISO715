@@ -16,6 +16,8 @@ import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { puestosAPI } from '../services/api';
 import type { Puesto } from '../types';
+import { ConfirmationModal } from './ConfirmationModal';
+import { useConfirmation } from '../hooks/useConfirmation';
 
 type ModalType = 'create' | 'edit' | 'view' | null;
 
@@ -32,15 +34,17 @@ export const PuestosManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [filterActive, setFilterActive] = useState<boolean | null>(null);
   const [modalType, setModalType] = useState<ModalType>(null);
   const [selectedPuesto, setSelectedPuesto] = useState<Puesto | null>(null);
 
   const queryClient = useQueryClient();
+  const { confirmation, showConfirmation, hideConfirmation } = useConfirmation();
 
-  // Query para obtener puestos
+  // Query para obtener puestos - obtener TODOS para poder filtrar en UI
   const { data: puestosData, isLoading, error } = useQuery({
-    queryKey: ['puestos', { activo: true }],
-    queryFn: () => puestosAPI.getAll({ activo: true })
+    queryKey: ['puestos'],
+    queryFn: () => puestosAPI.getAll()
   });
 
   const puestos = puestosData?.puestos || [];
@@ -84,14 +88,28 @@ export const PuestosManager: React.FC = () => {
     }
   });
 
+  // Mutation para toggle estado del puesto
+  const togglePuestoMutation = useMutation({
+    mutationFn: ({ id, activo }: { id: number; activo: boolean }) =>
+      puestosAPI.update(id, { activo }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['puestos'] });
+      toast.success('Estado actualizado exitosamente');
+    },
+    onError: () => {
+      toast.error('Error al actualizar el estado');
+    }
+  });
+
   // Filtros
   const filteredPuestos = puestos.filter((puesto: Puesto) => {
     const matchesSearch = puesto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          puesto.descripcion?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = !selectedLevel || puesto.nivel === selectedLevel;
     const matchesDepartment = !selectedDepartment || puesto.departamento === selectedDepartment;
+    const matchesActive = filterActive === null || puesto.activo === filterActive;
     
-    return matchesSearch && matchesLevel && matchesDepartment;
+    return matchesSearch && matchesLevel && matchesDepartment && matchesActive;
   });
 
   // Obtener departamentos únicos
@@ -113,9 +131,27 @@ export const PuestosManager: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este puesto?')) {
-      deletePuestoMutation.mutate(id);
-    }
+    const puesto = puestos.find((p: Puesto) => p.id === id);
+    const puestoName = puesto?.nombre || 'este puesto';
+    
+    showConfirmation(
+      {
+        title: 'Eliminar Puesto',
+        message: `¿Estás seguro de que deseas eliminar <strong>"${puestoName}"</strong>?<br/>Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        isDestructive: true,
+        loadingText: 'Eliminando...'
+      },
+      () => deletePuestoMutation.mutateAsync(id)
+    );
+  };
+
+  const handleToggleActive = (puesto: Puesto) => {
+    togglePuestoMutation.mutate({
+      id: puesto.id,
+      activo: !puesto.activo
+    });
   };
 
   const getLevelInfo = (nivel: string) => {
@@ -233,7 +269,7 @@ export const PuestosManager: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
@@ -266,6 +302,16 @@ export const PuestosManager: React.FC = () => {
                 <option key={index} value={dept}>{dept}</option>
               ))}
             </select>
+
+            <select
+              value={filterActive === null ? '' : filterActive.toString()}
+              onChange={(e) => setFilterActive(e.target.value === '' ? null : e.target.value === 'true')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Todos los estados</option>
+              <option value="true">Activos</option>
+              <option value="false">Inactivos</option>
+            </select>
           </div>
         </div>
 
@@ -276,11 +322,11 @@ export const PuestosManager: React.FC = () => {
               <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No hay puestos</h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm || selectedLevel || selectedDepartment
+                {searchTerm || selectedLevel || selectedDepartment || filterActive !== null
                   ? 'No se encontraron puestos con los filtros aplicados.'
                   : 'Comienza creando tu primer puesto de trabajo.'}
               </p>
-              {!searchTerm && !selectedLevel && !selectedDepartment && (
+              {!searchTerm && !selectedLevel && !selectedDepartment && filterActive === null && (
                 <button 
                   onClick={handleCreate} 
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors"
@@ -291,29 +337,29 @@ export const PuestosManager: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="overflow-hidden">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                       Puesto
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                       Departamento
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                       Nivel
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                       Salario
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                       Experiencia
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                       Estado
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                       Acciones
                     </th>
                   </tr>
@@ -323,22 +369,22 @@ export const PuestosManager: React.FC = () => {
                     const levelInfo = getLevelInfo(puesto.nivel);
                     return (
                       <tr key={puesto.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">
                               {puesto.nombre}
                             </div>
                             {puesto.descripcion && (
-                              <div className="text-sm text-gray-500 truncate max-w-xs">
+                              <div className="text-sm text-gray-500 truncate max-w-[180px]">
                                 {puesto.descripcion}
                               </div>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Building className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-900">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center min-w-0">
+                            <Building className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                            <span className="text-sm text-gray-900 truncate">
                               {puesto.departamento || 'No especificado'}
                             </span>
                           </div>
@@ -371,13 +417,26 @@ export const PuestosManager: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            puesto.activo 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {puesto.activo ? 'Activo' : 'Inactivo'}
-                          </span>
+                          <button
+                            onClick={() => handleToggleActive(puesto)}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              puesto.activo
+                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                            } transition-colors cursor-pointer`}
+                          >
+                            {puesto.activo ? (
+                              <>
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Activo
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Inactivo
+                              </>
+                            )}
+                          </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end space-x-2">
@@ -429,6 +488,20 @@ export const PuestosManager: React.FC = () => {
           }}
         />
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmation.isOpen}
+        onClose={hideConfirmation}
+        onConfirm={confirmation.onConfirm}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        isDestructive={confirmation.isDestructive}
+        isLoading={confirmation.isLoading}
+        loadingText={confirmation.loadingText}
+      />
     </div>
   );
 };

@@ -15,6 +15,9 @@ import type { Empleado } from '../types';
 import { toast } from 'react-hot-toast';
 
 const formatCurrency = (amount: number) => {
+  if (isNaN(amount) || amount === null || amount === undefined) {
+    return 'RD$0.00';
+  }
   return new Intl.NumberFormat('es-DO', {
     style: 'currency',
     currency: 'DOP'
@@ -99,7 +102,12 @@ export const ReporteNuevosEmpleados: React.FC = () => {
 
   const empleados = empleadosData?.empleados || [];
   const totalEmpleados = empleados.length;
-  const totalSalarios = empleados.reduce((sum: number, emp: Empleado) => sum + (emp.salario_acordado || 0), 0);
+  const totalSalarios = empleados.reduce((sum: number, emp: Empleado) => {
+    const salario = typeof emp.salario_acordado === 'string' 
+      ? parseFloat(emp.salario_acordado) 
+      : emp.salario_acordado || 0;
+    return sum + (isNaN(salario) ? 0 : salario);
+  }, 0);
   const promedioSalario = totalEmpleados > 0 ? totalSalarios / totalEmpleados : 0;
 
   // Agrupar por departamento
@@ -327,7 +335,11 @@ export const ReporteNuevosEmpleados: React.FC = () => {
                             {empleado.fecha_ingreso ? formatDate(empleado.fecha_ingreso) : 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {formatCurrency(empleado.salario_acordado || 0)}
+                            {formatCurrency(
+                              typeof empleado.salario_acordado === 'string' 
+                                ? parseFloat(empleado.salario_acordado) || 0
+                                : empleado.salario_acordado || 0
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

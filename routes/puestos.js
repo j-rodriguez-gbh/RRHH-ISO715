@@ -7,7 +7,7 @@ router.use(authenticated);
 
 router.get('/', async (req, res) => {
   try {
-    const { activo = true, limit } = req.query;
+    const { activo, limit } = req.query;
     
     let whereClause = {};
     if (activo !== undefined) {

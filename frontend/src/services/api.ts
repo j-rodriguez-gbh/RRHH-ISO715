@@ -142,12 +142,12 @@ export const idiomasAPI = {
     return response.data.idiomas ? response.data : { idiomas: response.data };
   },
   
-  create: async (idioma: { nombre: string; codigo_iso?: string }): Promise<Idioma> => {
+  create: async (idioma: { nombre: string; codigo?: string }): Promise<Idioma> => {
     const response = await api.post('/idiomas', idioma);
     return response.data;
   },
   
-  update: async (id: number, idioma: { nombre?: string; codigo_iso?: string; activo?: boolean }): Promise<Idioma> => {
+  update: async (id: number, idioma: { nombre?: string; codigo?: string; activo?: boolean }): Promise<Idioma> => {
     const response = await api.put(`/idiomas/${id}`, idioma);
     return response.data;
   },
@@ -249,27 +249,25 @@ export const empleadosAPI = {
 
 
 
-// Nota: departamentosAPI será implementado cuando se cree el backend correspondiente
 export const departamentosAPI = {
   getAll: async (params?: { search?: string; activo?: boolean }): Promise<{ departamentos: Departamento[] }> => {
-    // Mock API - reemplazar con implementación real
-    console.log('Parámetros:', params);
-    throw new Error('API de departamentos no implementada aún');
+    const response = await api.get('/departamentos', { params });
+    return response.data.departamentos ? response.data : { departamentos: response.data };
   },
   
   create: async (departamento: Omit<Departamento, 'id' | 'createdAt' | 'updatedAt'>): Promise<Departamento> => {
-    console.log('Crear departamento:', departamento);
-    throw new Error('API de departamentos no implementada aún');
+    const response = await api.post('/departamentos', departamento);
+    return response.data;
   },
   
   update: async (id: number, departamento: Partial<Omit<Departamento, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Departamento> => {
-    console.log('Actualizar departamento:', id, departamento);
-    throw new Error('API de departamentos no implementada aún');
+    const response = await api.put(`/departamentos/${id}`, departamento);
+    return response.data;
   },
   
   delete: async (id: number) => {
-    console.log('Eliminar departamento:', id);
-    throw new Error('API de departamentos no implementada aún');
+    const response = await api.delete(`/departamentos/${id}`);
+    return response.data;
   },
 };
 

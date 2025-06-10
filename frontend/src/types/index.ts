@@ -30,7 +30,7 @@ export interface Competencia {
 export interface Idioma {
   id: number;
   nombre: string;
-  codigo_iso?: string;
+  codigo?: string;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
