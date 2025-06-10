@@ -7,6 +7,10 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { CandidatosList } from './components/CandidatosList';
+import { CandidatoDetail } from './components/CandidatoDetail';
+import { EmpleadosList } from './components/EmpleadosList';
+import { EmpleadoFormWrapper } from './components/EmpleadoFormWrapper';
+import { HireCandidatoWrapper } from './components/HireCandidatoWrapper';
 import { Layout } from './components/Layout';
 
 // Create a client
@@ -77,9 +81,15 @@ function App() {
               />
               {/* Candidatos routes */}
               <Route path="/candidatos" element={<ProtectedRoute><Layout><CandidatosList /></Layout></ProtectedRoute>} />
+              <Route path="/candidatos/:id" element={<ProtectedRoute><Layout><CandidatoDetail /></Layout></ProtectedRoute>} />
               <Route path="/candidatos/nuevo" element={<ProtectedRoute><Layout><div>Nuevo Candidato (Coming Soon)</div></Layout></ProtectedRoute>} />
               <Route path="/candidatos/buscar" element={<ProtectedRoute><Layout><div>Búsqueda (Coming Soon)</div></Layout></ProtectedRoute>} />
-              <Route path="/empleados" element={<ProtectedRoute><Layout><div>Empleados (Coming Soon)</div></Layout></ProtectedRoute>} />
+              {/* Empleados routes */}
+              <Route path="/empleados" element={<ProtectedRoute><Layout><EmpleadosList /></Layout></ProtectedRoute>} />
+              <Route path="/empleados/nuevo" element={<ProtectedRoute><Layout><EmpleadoFormWrapper /></Layout></ProtectedRoute>} />
+              <Route path="/empleados/:id/editar" element={<ProtectedRoute><Layout><EmpleadoFormWrapper /></Layout></ProtectedRoute>} />
+              <Route path="/candidatos/:id/contratar" element={<ProtectedRoute><Layout><HireCandidatoWrapper /></Layout></ProtectedRoute>} />
+              
               <Route path="/reportes" element={<ProtectedRoute><Layout><div>Reportes (Coming Soon)</div></Layout></ProtectedRoute>} />
               <Route path="/configuracion" element={<ProtectedRoute><Layout><div>Configuración (Coming Soon)</div></Layout></ProtectedRoute>} />
             </Routes>

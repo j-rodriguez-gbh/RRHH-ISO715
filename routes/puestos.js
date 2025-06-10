@@ -7,8 +7,20 @@ router.use(authenticated);
 
 router.get('/', async (req, res) => {
   try {
-    const puestos = await Puesto.findAll({ where: { activo: true } });
-    res.json(puestos);
+    const { activo = true, limit } = req.query;
+    
+    let whereClause = {};
+    if (activo !== undefined) {
+      whereClause.activo = activo === 'true';
+    }
+
+    const options = { where: whereClause };
+    if (limit) {
+      options.limit = parseInt(limit);
+    }
+
+    const puestos = await Puesto.findAll(options);
+    res.json({ puestos });
   } catch (error) {
     res.status(500).json({ error: 'Error interno del servidor' });
   }

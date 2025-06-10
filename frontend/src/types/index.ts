@@ -127,14 +127,15 @@ export interface CandidatoWithTransitions {
 
 export interface Empleado {
   id: number;
+  codigo_empleado: string;
   nombres: string;
   apellidos: string;
   documento_identidad: string;
   email: string;
   telefono?: string;
   fecha_ingreso: string;
-  salario: number;
-  activo: boolean;
+  salario_acordado: number;
+  estado: 'activo' | 'inactivo' | 'vacaciones' | 'licencia';
   candidatoId?: number;
   puestoId: number;
   Puesto?: Puesto;

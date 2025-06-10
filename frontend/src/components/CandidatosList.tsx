@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-  X
+  X,
+  UserCheck
 } from 'lucide-react';
 import { candidatosAPI } from '../services/api';
 import type { Candidato, CandidatoEstado } from '../types';
@@ -86,6 +87,8 @@ export const CandidatosList: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingCandidato, setEditingCandidato] = useState<number | undefined>(undefined);
+  const [showHireForm, setShowHireForm] = useState(false);
+  const [hiringCandidato, setHiringCandidato] = useState<number | undefined>(undefined);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const limit = 10;
 
@@ -158,6 +161,22 @@ export const CandidatosList: React.FC = () => {
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingCandidato(undefined);
+    refetch();
+  };
+
+  const handleHireCandidato = (id: number) => {
+    setHiringCandidato(id);
+    setShowHireForm(true);
+  };
+
+  const handleCloseHireForm = () => {
+    setShowHireForm(false);
+    setHiringCandidato(undefined);
+  };
+
+  const handleHireSuccess = () => {
+    setShowHireForm(false);
+    setHiringCandidato(undefined);
     refetch();
   };
 
@@ -352,6 +371,15 @@ export const CandidatosList: React.FC = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Link>
+                          {candidato.estado === 'aprobado' && (
+                            <button
+                              onClick={() => handleHireCandidato(candidato.id)}
+                              className="text-green-600 hover:text-green-900 p-1 rounded"
+                              title="Contratar"
+                            >
+                              <UserCheck className="h-4 w-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEditCandidato(candidato.id)}
                             className="text-yellow-600 hover:text-yellow-900 p-1 rounded"
