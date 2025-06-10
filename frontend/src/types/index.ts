@@ -128,14 +128,12 @@ export interface CandidatoWithTransitions {
 export interface Empleado {
   id: number;
   codigo_empleado: string;
-  nombres: string;
-  apellidos: string;
-  documento_identidad: string;
-  email: string;
-  telefono?: string;
   fecha_ingreso: string;
   salario_acordado: number;
+  tipo_contrato: 'indefinido' | 'temporal' | 'practicas' | 'consultoria';
   estado: 'activo' | 'inactivo' | 'vacaciones' | 'licencia';
+  fecha_fin_contrato?: string;
+  supervisor_id?: number;
   candidatoId?: number;
   puestoId: number;
   Puesto?: Puesto;

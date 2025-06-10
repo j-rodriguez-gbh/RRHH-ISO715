@@ -9,6 +9,7 @@ import { Dashboard } from './components/Dashboard';
 import { CandidatosList } from './components/CandidatosList';
 import { CandidatoDetail } from './components/CandidatoDetail';
 import { EmpleadosList } from './components/EmpleadosList';
+import { EmpleadoDetail } from './components/EmpleadoDetail';
 import { EmpleadoFormWrapper } from './components/EmpleadoFormWrapper';
 import { HireCandidatoWrapper } from './components/HireCandidatoWrapper';
 import { Layout } from './components/Layout';
@@ -86,6 +87,7 @@ function App() {
               <Route path="/candidatos/buscar" element={<ProtectedRoute><Layout><div>Búsqueda (Coming Soon)</div></Layout></ProtectedRoute>} />
               {/* Empleados routes */}
               <Route path="/empleados" element={<ProtectedRoute><Layout><EmpleadosList /></Layout></ProtectedRoute>} />
+              <Route path="/empleados/:id" element={<ProtectedRoute><Layout><EmpleadoDetail /></Layout></ProtectedRoute>} />
               <Route path="/empleados/nuevo" element={<ProtectedRoute><Layout><EmpleadoFormWrapper /></Layout></ProtectedRoute>} />
               <Route path="/empleados/:id/editar" element={<ProtectedRoute><Layout><EmpleadoFormWrapper /></Layout></ProtectedRoute>} />
               <Route path="/candidatos/:id/contratar" element={<ProtectedRoute><Layout><HireCandidatoWrapper /></Layout></ProtectedRoute>} />

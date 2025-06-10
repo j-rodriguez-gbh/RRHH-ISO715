@@ -83,11 +83,20 @@ export const HireCandidatoForm: React.FC<HireCandidatoFormProps> = ({
         salario_acordado: data.salario_acordado,
         estado: data.estado
       }),
-    onSuccess: () => {
+    onSuccess: (empleadoCreado) => {
+      // Invalidate all related queries to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ['empleados'] });
       queryClient.invalidateQueries({ queryKey: ['candidatos'] });
-      onSuccess?.();
+      queryClient.invalidateQueries({ queryKey: ['candidato', candidatoId] });
+      
+      // Small delay to ensure queries are invalidated before navigation
+      setTimeout(() => {
+        onSuccess?.();
+      }, 100);
     },
+    onError: (error) => {
+      console.error('Error al contratar candidato:', error);
+    }
   });
 
   const handleInputChange = (
