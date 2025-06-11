@@ -344,119 +344,94 @@ class CandidatoController {
     try {
       const { puestoId, competencias, idiomas, capacitaciones, experiencia_min } = req.query;
 
-      let whereClause = {};
+      console.log('Search parameters:', { puestoId, competencias, idiomas, capacitaciones, experiencia_min });
+
+      // Start with base include clause - always get all associations
       let includeClause = [
-        // Always include all associations for frontend scoring
         {
           model: Competencia,
+          as: 'Competencias',
           through: { attributes: [] },
           required: false
         },
         {
           model: Idioma,
+          as: 'Idiomas',
           through: { attributes: [] },
           required: false
         },
         {
           model: Capacitacion,
+          as: 'Capacitacions',
           through: { attributes: [] },
           required: false
         },
         {
           model: ExperienciaLaboral,
+          as: 'ExperienciaLaborals',
           required: false
         }
       ];
 
-      // Filter by puesto if specified
-      if (puestoId) {
-        whereClause.puestoId = parseInt(puestoId);
-      }
-
-      // Build subqueries for optional filters (OR logic for flexible matching)
-      let candidatosFilteredByCompetencias = null;
-      let candidatosFilteredByIdiomas = null;
-      let candidatosFilteredByCapacitaciones = null;
-
+      // Modify include clause based on filters
+      // Only make associations required if there are specific filters
       if (competencias) {
         const competenciaIds = competencias.split(',').map(id => parseInt(id));
-        candidatosFilteredByCompetencias = await Candidato.findAll({
-          include: [{
-            model: Competencia,
-            where: { id: { [Op.in]: competenciaIds } },
-            through: { attributes: [] }
-          }],
-          attributes: ['id']
-        });
+        includeClause[0] = {
+          model: Competencia,
+          as: 'Competencias',
+          where: { id: { [Op.in]: competenciaIds } },
+          through: { attributes: [] },
+          required: true
+        };
       }
 
       if (idiomas) {
         const idiomaIds = idiomas.split(',').map(id => parseInt(id));
-        candidatosFilteredByIdiomas = await Candidato.findAll({
-          include: [{
-            model: Idioma,
-            where: { id: { [Op.in]: idiomaIds } },
-            through: { attributes: [] }
-          }],
-          attributes: ['id']
-        });
+        includeClause[1] = {
+          model: Idioma,
+          as: 'Idiomas',
+          where: { id: { [Op.in]: idiomaIds } },
+          through: { attributes: [] },
+          required: true
+        };
       }
 
       if (capacitaciones) {
         const capacitacionIds = capacitaciones.split(',').map(id => parseInt(id));
-        candidatosFilteredByCapacitaciones = await Candidato.findAll({
-          include: [{
-            model: Capacitacion,
-            where: { id: { [Op.in]: capacitacionIds } },
-            through: { attributes: [] }
-          }],
-          attributes: ['id']
-        });
-      }
-
-      // Get candidate IDs that match any of the criteria
-      let candidateIds = new Set();
-      let hasFilters = false;
-
-      if (candidatosFilteredByCompetencias) {
-        candidatosFilteredByCompetencias.forEach(c => candidateIds.add(c.id));
-        hasFilters = true;
-      }
-
-      if (candidatosFilteredByIdiomas) {
-        candidatosFilteredByIdiomas.forEach(c => candidateIds.add(c.id));
-        hasFilters = true;
-      }
-
-      if (candidatosFilteredByCapacitaciones) {
-        candidatosFilteredByCapacitaciones.forEach(c => candidateIds.add(c.id));
-        hasFilters = true;
-      }
-
-      // If filters were applied, limit results to matching candidates
-      if (hasFilters) {
-        whereClause.id = { [Op.in]: Array.from(candidateIds) };
+        includeClause[2] = {
+          model: Capacitacion,
+          as: 'Capacitacions',
+          where: { id: { [Op.in]: capacitacionIds } },
+          through: { attributes: [] },
+          required: true
+        };
       }
 
       // Get all candidates with complete data
       let candidatos = await Candidato.findAll({
-        where: whereClause,
         include: includeClause,
         distinct: true,
         order: [['fecha_aplicacion', 'DESC']]
       });
 
+      console.log(`Found ${candidatos.length} candidates before experience filter`);
+
       // Filter by experience if specified
       if (experiencia_min) {
         const minExperience = parseInt(experiencia_min);
         candidatos = candidatos.filter(candidato => {
-          return candidato.ExperienciaLaborals && candidato.ExperienciaLaborals.length >= minExperience;
+          const experienceCount = candidato.ExperienciaLaborals ? candidato.ExperienciaLaborals.length : 0;
+          return experienceCount >= minExperience;
         });
       }
+
+      console.log(`Returning ${candidatos.length} candidates after all filters`);
 
       res.json({ candidatos });
     } catch (error) {
       console.error('Error searching candidatos:', error);
+      console.error('Stack trace:', error.stack);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
