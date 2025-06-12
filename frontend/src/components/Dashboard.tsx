@@ -17,13 +17,13 @@ import { candidatosAPI, empleadosAPI, puestosAPI } from '../services/api';
 export const Dashboard: React.FC = () => {
   // Queries para obtener estadísticas
   const { data: candidatosData } = useQuery({
-    queryKey: ['candidatos'],
-    queryFn: () => candidatosAPI.getAll()
+    queryKey: ['candidatos-dashboard'],
+    queryFn: () => candidatosAPI.getAll({ limit: 1000 }) // Obtener todos los candidatos para estadísticas
   });
 
   const { data: empleadosData } = useQuery({
-    queryKey: ['empleados'],
-    queryFn: () => empleadosAPI.getAll()
+    queryKey: ['empleados-dashboard'],
+    queryFn: () => empleadosAPI.getAll({ limit: 1000 }) // Obtener todos los empleados para estadísticas
   });
 
   const { data: puestosData } = useQuery({
@@ -31,15 +31,15 @@ export const Dashboard: React.FC = () => {
     queryFn: () => puestosAPI.getAll({ activo: true })
   });
 
-  // Calcular estadísticas
-  const totalCandidatos = candidatosData?.candidatos?.length || 0;
+  // Calcular estadísticas usando el total de la respuesta de la API
+  const totalCandidatos = candidatosData?.total || 0;
   const candidatosEnProceso = candidatosData?.candidatos?.filter((c: { estado: string }) => 
     ['en_revision', 'preseleccionado', 'entrevista_inicial', 'entrevista_tecnica', 'entrevista_final'].includes(c.estado)
   ).length || 0;
   const candidatosAprobados = candidatosData?.candidatos?.filter((c: { estado: string }) => 
     c.estado === 'aprobado'
   ).length || 0;
-  const totalEmpleados = empleadosData?.empleados?.length || 0;
+  const totalEmpleados = empleadosData?.total || 0;
   const totalPuestos = puestosData?.puestos?.length || 0;
 
   const menuItems = [

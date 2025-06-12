@@ -463,94 +463,53 @@ async function seedDatabase() {
     ]);
     console.log('✅ Puestos creados:', puestos.length);
 
-    // Estados posibles para candidatos
+    // Generate 100 realistic candidates with varied data
+    const candidatosData = [];
+    const nombres = ['Ana', 'Luis', 'Carmen', 'Roberto', 'Isabella', 'Diego', 'Sofía', 'Miguel', 'Valeria', 'Carlos', 'Gabriela', 'Fernando', 'Mariana', 'Andrés', 'Paola', 'José', 'María', 'Pedro', 'Luz', 'David', 'Andrea', 'Alejandro', 'Patricia', 'Ricardo', 'Elena', 'Juan', 'Natalia', 'Sebastián', 'Carolina', 'Daniel', 'Mónica', 'Javier', 'Claudia', 'Eduardo', 'Silvia', 'Mauricio', 'Teresa', 'Guillermo', 'Beatriz', 'Pablo', 'Gloria', 'Antonio', 'Rosa', 'Jorge', 'Sandra', 'Raúl', 'Esperanza', 'Francisco', 'Pilar', 'Enrique'];
+    const apellidos = ['García', 'Rodríguez', 'González', 'Fernández', 'López', 'Martínez', 'Sánchez', 'Pérez', 'Gómez', 'Martín', 'Jiménez', 'Ruiz', 'Hernández', 'Díaz', 'Moreno', 'Muñoz', 'Álvarez', 'Romero', 'Alonso', 'Gutiérrez', 'Navarro', 'Torres', 'Domínguez', 'Vázquez', 'Ramos', 'Gil', 'Ramírez', 'Serrano', 'Blanco', 'Suárez', 'Molina', 'Morales', 'Ortega', 'Delgado', 'Castro', 'Ortiz', 'Rubio', 'Marín', 'Sanz', 'Iglesias', 'Medina', 'Garrido', 'Cortés', 'Castillo', 'Santos', 'Lozano', 'Guerrero', 'Cano', 'Prieto', 'Méndez'];
+    const ciudades = ['Santo Domingo', 'Santiago', 'Puerto Plata', 'San Cristóbal', 'La Romana', 'San Pedro de Macorís', 'Higüey', 'Moca', 'Bani', 'Azua'];
+    const sectores = ['Piantini', 'Naco', 'Bella Vista', 'Gazcue', 'Zona Colonial', 'Los Cacicazgos', 'Serrallés', 'Villa Mella', 'Los Alcarrizos', 'Boca Chica'];
     const estados = ['aplicado', 'en_revision', 'preseleccionado', 'entrevista_inicial', 'entrevista_tecnica', 'entrevista_final', 'aprobado', 'rechazado', 'contratado'];
+    const disponibilidades = ['inmediata', '15_dias', '30_dias', 'a_convenir'];
 
-    // Create diverse Candidatos with all possible states
-    const candidatosData = [
-      // Estados tempranos
-      {
-        nombres: 'Ana María', apellidos: 'García Rodríguez', email: 'ana.garcia@email.com', telefono: '809 111 1111',
-        documento_identidad: '40212345678', fecha_nacimiento: '1992-03-15', direccion: 'Av. 27 de Febrero #123, Santo Domingo',
-        salario_aspirado: 65000, disponibilidad: 'inmediata', estado: 'aplicado'
-      },
-      {
-        nombres: 'Luis Fernando', apellidos: 'Martínez Pérez', email: 'luis.martinez@email.com', telefono: '809 222 2222',
-        documento_identidad: '40298765432', fecha_nacimiento: '1988-07-22', direccion: 'Calle Mercedes #45, Santiago',
-        salario_aspirado: 90000, disponibilidad: '15_dias', estado: 'en_revision'
-      },
-      {
-        nombres: 'Carmen Elena', apellidos: 'López Silva', email: 'carmen.lopez@email.com', telefono: '829 333 3333',
-        documento_identidad: '40234567890', fecha_nacimiento: '1990-11-08', direccion: 'Zona Colonial #78, Santo Domingo',
-        salario_aspirado: 75000, disponibilidad: 'inmediata', estado: 'preseleccionado'
-      },
-      
-      // Estados intermedios
-      {
-        nombres: 'Roberto Carlos', apellidos: 'Hernández Cruz', email: 'roberto.hernandez@email.com', telefono: '829 444 4444',
-        documento_identidad: '40245678901', fecha_nacimiento: '1985-09-12', direccion: 'Piantini #90, Santo Domingo',
-        salario_aspirado: 105000, disponibilidad: '30_dias', estado: 'entrevista_inicial'
-      },
-      {
-        nombres: 'Isabella', apellidos: 'Fernández Morales', email: 'isabella.fernandez@email.com', telefono: '849 555 5555',
-        documento_identidad: '40256789012', fecha_nacimiento: '1993-12-03', direccion: 'Bella Vista #12, Santo Domingo',
-        salario_aspirado: 85000, disponibilidad: 'inmediata', estado: 'entrevista_tecnica'
-      },
-      {
-        nombres: 'Diego Alejandro', apellidos: 'Ramírez Jiménez', email: 'diego.ramirez@email.com', telefono: '809 666 6666',
-        documento_identidad: '40267890123', fecha_nacimiento: '1987-05-18', direccion: 'Los Cacicazgos #34, Santo Domingo',
-        salario_aspirado: 135000, disponibilidad: '15_dias', estado: 'entrevista_final'
-      },
-      
-      // Estados finales
-      {
-        nombres: 'Sofía Alejandra', apellidos: 'Torres Valdez', email: 'sofia.torres@email.com', telefono: '829 777 7777',
-        documento_identidad: '40278901234', fecha_nacimiento: '1991-08-25', direccion: 'Naco #56, Santo Domingo',
-        salario_aspirado: 95000, disponibilidad: 'inmediata', estado: 'aprobado'
-      },
-      {
-        nombres: 'Miguel Ángel', apellidos: 'Castro Reyes', email: 'miguel.castro@email.com', telefono: '849 888 8888',
-        documento_identidad: '40289012345', fecha_nacimiento: '1989-01-14', direccion: 'Gazcue #78, Santo Domingo',
-        salario_aspirado: 70000, disponibilidad: '30_dias', estado: 'rechazado'
-      },
-      {
-        nombres: 'Valeria Nicole', apellidos: 'Mendoza Guzmán', email: 'valeria.mendoza@email.com', telefono: '809 999 9999',
-        documento_identidad: '40290123456', fecha_nacimiento: '1994-06-07', direccion: 'Ensanche Paraíso #23, Santo Domingo',
-        salario_aspirado: 110000, disponibilidad: 'inmediata', estado: 'contratado'
-      },
-      
-      // Candidatos adicionales para más diversidad
-      {
-        nombres: 'Carlos Eduardo', apellidos: 'Vargas León', email: 'carlos.vargas@email.com', telefono: '829 101 1010',
-        documento_identidad: '40201234567', fecha_nacimiento: '1986-02-28', direccion: 'Ensanche Evaristo #45, Santo Domingo',
-        salario_aspirado: 145000, disponibilidad: '15_dias', estado: 'aprobado'
-      },
-      {
-        nombres: 'Gabriela María', apellidos: 'Sánchez Díaz', email: 'gabriela.sanchez@email.com', telefono: '849 121 2121',
-        documento_identidad: '40212345671', fecha_nacimiento: '1992-10-16', direccion: 'Mirador Sur #67, Santo Domingo',
-        salario_aspirado: 55000, disponibilidad: 'inmediata', estado: 'en_revision'
-      },
-      {
-        nombres: 'Fernando José', apellidos: 'Acosta Peña', email: 'fernando.acosta@email.com', telefono: '809 131 3131',
-        documento_identidad: '40223456789', fecha_nacimiento: '1990-04-20', direccion: 'Serrallés #89, Santo Domingo',
-        salario_aspirado: 82000, disponibilidad: '30_dias', estado: 'entrevista_inicial'
-      },
-      {
-        nombres: 'Mariana Alejandra', apellidos: 'Rojas Herrera', email: 'mariana.rojas@email.com', telefono: '829 141 4141',
-        documento_identidad: '40234567812', fecha_nacimiento: '1988-12-09', direccion: 'Villa Mella #12, Santo Domingo Norte',
-        salario_aspirado: 72000, disponibilidad: 'inmediata', estado: 'preseleccionado'
-      },
-      {
-        nombres: 'Andrés Felipe', apellidos: 'Moreno Cabrera', email: 'andres.moreno@email.com', telefono: '849 151 5151',
-        documento_identidad: '40245678923', fecha_nacimiento: '1987-07-03', direccion: 'Los Alcarrizos #34, Santo Domingo Oeste',
-        salario_aspirado: 115000, disponibilidad: '15_dias', estado: 'entrevista_tecnica'
-      },
-      {
-        nombres: 'Paola Andrea', apellidos: 'Gil Montoya', email: 'paola.gil@email.com', telefono: '809 161 6161',
-        documento_identidad: '40256789034', fecha_nacimiento: '1993-09-11', direccion: 'Boca Chica #56, Santo Domingo Este',
-        salario_aspirado: 65000, disponibilidad: 'inmediata', estado: 'rechazado'
+    // Create distribution for states (realistic distribution)
+    const stateDistribution = {
+      'aplicado': 20,          // 20%
+      'en_revision': 18,       // 18%
+      'preseleccionado': 15,   // 15%
+      'entrevista_inicial': 12, // 12%
+      'entrevista_tecnica': 10, // 10%
+      'entrevista_final': 8,   // 8%
+      'aprobado': 7,           // 7%
+      'rechazado': 6,          // 6%
+      'contratado': 4          // 4% (estos se convertirán en empleados)
+    };
+
+    let candidateCount = 0;
+    for (const [estado, count] of Object.entries(stateDistribution)) {
+      for (let i = 0; i < count; i++) {
+        candidateCount++;
+        const nombre = nombres[Math.floor(Math.random() * nombres.length)];
+        const apellido1 = apellidos[Math.floor(Math.random() * apellidos.length)];
+        const apellido2 = apellidos[Math.floor(Math.random() * apellidos.length)];
+        const ciudad = ciudades[Math.floor(Math.random() * ciudades.length)];
+        const sector = sectores[Math.floor(Math.random() * sectores.length)];
+        
+        candidatosData.push({
+          nombres: nombre,
+          apellidos: `${apellido1} ${apellido2}`,
+          email: `${nombre.toLowerCase()}.${apellido1.toLowerCase()}${candidateCount}@email.com`,
+          telefono: `809 ${String(Math.floor(Math.random() * 900) + 100)} ${String(Math.floor(Math.random() * 9000) + 1000)}`,
+          documento_identidad: `402${String(Math.floor(Math.random() * 90000000) + 10000000)}`,
+          fecha_nacimiento: `${1985 + Math.floor(Math.random() * 15)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          direccion: `${sector} #${Math.floor(Math.random() * 200) + 1}, ${ciudad}`,
+          salario_aspirado: 55000 + Math.floor(Math.random() * 90000), // 55K - 145K
+          disponibilidad: disponibilidades[Math.floor(Math.random() * disponibilidades.length)],
+          estado: estado,
+          fecha_aplicacion: `2024-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
+        });
       }
-    ];
+    }
 
     // Create candidatos
     const candidatos = [];
@@ -560,52 +519,40 @@ async function seedDatabase() {
     }
     console.log('✅ Candidatos creados:', candidatos.length);
 
-    // Create empleados con fechas variadas para reportes
-    const empleadosData = [
-      // Empleados de enero 2024
-      {
-        codigo_empleado: 'EMP001', candidatoId: candidatos[8].id, puestoId: puestos[0].id,
-        fecha_ingreso: '2024-01-15', salario_acordado: 50000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
-      {
-        codigo_empleado: 'EMP002', candidatoId: candidatos[9].id, puestoId: puestos[2].id,
-        fecha_ingreso: '2024-01-22', salario_acordado: 55000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
+    // Create 30+ employees with varied levels and hiring dates across different months
+    const empleadosData = [];
+    const contratadosCandidatos = candidatos.filter(c => c.estado === 'contratado' || c.estado === 'aprobado');
+    
+    // Generate dates from January 2024 to current date for more realistic data
+    const generateRandomDate = () => {
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date();
+      const timeDiff = endDate.getTime() - startDate.getTime();
+      const randomTime = Math.random() * timeDiff;
+      const randomDate = new Date(startDate.getTime() + randomTime);
+      return randomDate.toISOString().split('T')[0];
+    };
+
+    // Create employees from contracted candidates
+    for (let i = 0; i < Math.min(contratadosCandidatos.length, 35); i++) {
+      const candidato = contratadosCandidatos[i];
+      const puesto = puestos[Math.floor(Math.random() * puestos.length)];
       
-      // Empleados de febrero 2024
-      {
-        codigo_empleado: 'EMP003', candidatoId: candidatos[6].id, puestoId: puestos[4].id,
-        fecha_ingreso: '2024-02-10', salario_acordado: 85000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
+      // Calculate salary within the position range
+      const salarioMin = puesto.salario_min;
+      const salarioMax = puesto.salario_max;
+      const salarioAcordado = salarioMin + Math.floor(Math.random() * (salarioMax - salarioMin));
       
-      // Empleados de marzo 2024
-      {
-        codigo_empleado: 'EMP004', candidatoId: candidatos[13].id, puestoId: puestos[11].id,
-        fecha_ingreso: '2024-03-05', salario_acordado: 70000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
-      {
-        codigo_empleado: 'EMP005', candidatoId: candidatos[14].id, puestoId: puestos[7].id,
-        fecha_ingreso: '2024-03-18', salario_acordado: 60000, estado: 'activo', tipo_contrato: 'temporal'
-      },
-      
-      // Empleados de abril 2024
-      {
-        codigo_empleado: 'EMP006', candidatoId: candidatos[12].id, puestoId: puestos[1].id,
-        fecha_ingreso: '2024-04-08', salario_acordado: 105000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
-      
-      // Empleados de noviembre 2024 (recientes)
-      {
-        codigo_empleado: 'EMP007', candidatoId: candidatos[10].id, puestoId: puestos[8].id,
-        fecha_ingreso: '2024-11-15', salario_acordado: 130000, estado: 'activo', tipo_contrato: 'indefinido'
-      },
-      
-      // Empleados de diciembre 2024 (muy recientes)
-      {
-        codigo_empleado: 'EMP008', candidatoId: candidatos[11].id, puestoId: puestos[13].id,
-        fecha_ingreso: '2024-12-01', salario_acordado: 95000, estado: 'activo', tipo_contrato: 'indefinido'
-      }
-    ];
+      empleadosData.push({
+        codigo_empleado: `EMP${String(i + 1).padStart(3, '0')}`,
+        candidatoId: candidato.id,
+        puestoId: puesto.id,
+        fecha_ingreso: generateRandomDate(),
+        salario_acordado: salarioAcordado,
+        estado: Math.random() > 0.95 ? 'inactivo' : 'activo', // 5% inactive
+        tipo_contrato: Math.random() > 0.8 ? 'temporal' : 'indefinido' // 20% temporal
+      });
+    }
 
     const empleados = await Empleado.bulkCreate(empleadosData);
     console.log('✅ Empleados creados:', empleados.length);
@@ -779,7 +726,7 @@ async function seedDatabase() {
     console.log(`   ${idiomas.length} idiomas`);
     console.log(`   ${capacitaciones.length} capacitaciones`);
     console.log(`   ${puestos.length} puestos`);
-    console.log(`   ${candidatos.length} candidatos (en todos los estados)`);
+    console.log(`   ${candidatos.length} candidatos (distribución realista)`);
     console.log(`   ${empleados.length} empleados (con fechas de ingreso variadas)`);
     console.log('\n📈 Estados de candidatos distribuidos:');
     

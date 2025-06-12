@@ -32,10 +32,23 @@ const formatDate = (dateString: string) => {
   });
 };
 
+// Función para obtener las fechas de los últimos 3 meses
+const getLast3Months = () => {
+  const today = new Date();
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(today.getMonth() - 3);
+  
+  return {
+    inicio: threeMonthsAgo.toISOString().split('T')[0],
+    fin: today.toISOString().split('T')[0]
+  };
+};
+
 export const ReporteNuevosEmpleados: React.FC = () => {
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  const defaultDates = getLast3Months();
+  const [fechaInicio, setFechaInicio] = useState(defaultDates.inicio);
+  const [fechaFin, setFechaFin] = useState(defaultDates.fin);
+  const [showPreview, setShowPreview] = useState(true);
 
   // Query para vista previa de datos
   const { data: empleadosData, isLoading: loadingPreview, refetch } = useQuery({
@@ -45,7 +58,7 @@ export const ReporteNuevosEmpleados: React.FC = () => {
       fecha_fin: fechaFin,
       limit: 1000
     }),
-    enabled: false, // Solo ejecutar cuando se solicite explícitamente
+    enabled: !!(fechaInicio && fechaFin), // Ejecutar automáticamente cuando hay fechas
   });
 
   // Mutation para generar PDF
@@ -131,6 +144,11 @@ export const ReporteNuevosEmpleados: React.FC = () => {
               <p className="text-gray-600">
                 Genera reportes de empleados contratados en un rango de fechas específico
               </p>
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-700">
+                  📊 Mostrando datos de los últimos 3 meses por defecto. Puedes modificar las fechas para personalizar el reporte.
+                </p>
+              </div>
             </div>
           </div>
         </div>
