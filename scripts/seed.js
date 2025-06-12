@@ -523,19 +523,20 @@ async function seedDatabase() {
     const empleadosData = [];
     const contratadosCandidatos = candidatos.filter(c => c.estado === 'contratado' || c.estado === 'aprobado');
     
-    // Generate dates across the last 12 months for more realistic data
-    const generateRandomDate = (monthsBack) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - monthsBack);
-      date.setDate(Math.floor(Math.random() * 28) + 1);
-      return date.toISOString().split('T')[0];
+    // Generate dates from January 2024 to current date for more realistic data
+    const generateRandomDate = () => {
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date();
+      const timeDiff = endDate.getTime() - startDate.getTime();
+      const randomTime = Math.random() * timeDiff;
+      const randomDate = new Date(startDate.getTime() + randomTime);
+      return randomDate.toISOString().split('T')[0];
     };
 
     // Create employees from contracted candidates
     for (let i = 0; i < Math.min(contratadosCandidatos.length, 35); i++) {
       const candidato = contratadosCandidatos[i];
       const puesto = puestos[Math.floor(Math.random() * puestos.length)];
-      const monthsBack = Math.floor(Math.random() * 12); // 0-11 months back
       
       // Calculate salary within the position range
       const salarioMin = puesto.salario_min;
@@ -546,7 +547,7 @@ async function seedDatabase() {
         codigo_empleado: `EMP${String(i + 1).padStart(3, '0')}`,
         candidatoId: candidato.id,
         puestoId: puesto.id,
-        fecha_ingreso: generateRandomDate(monthsBack),
+        fecha_ingreso: generateRandomDate(),
         salario_acordado: salarioAcordado,
         estado: Math.random() > 0.95 ? 'inactivo' : 'activo', // 5% inactive
         tipo_contrato: Math.random() > 0.8 ? 'temporal' : 'indefinido' // 20% temporal
